@@ -109,8 +109,9 @@ public class SignInUI extends JFrame {
    private void onSignInClicked(ActionEvent event) {
     String enteredUsername = txtUsername.getText();
     String enteredPassword = txtPassword.getText();
+    Schema scheama = new Schema();
     System.out.println(enteredUsername+" <-> "+enteredPassword);
-    if (verifyCredentials(enteredUsername, enteredPassword)) {
+    if (scheama.verifyCredentials(enteredUsername, enteredPassword)) {
         System.out.println("It worked");
          // Close the SignUpUI frame
     dispose();
@@ -136,25 +137,25 @@ private void onRegisterNowClicked(ActionEvent event) {
     });
 }
 
-private boolean verifyCredentials(String username, String password) {
-    try (BufferedReader reader = new BufferedReader(new FileReader("quackstagram_db-main/quackstagram_db/src/data/credentials.txt"))) {
-        String line;
-        while ((line = reader.readLine()) != null) {
-            String[] credentials = line.split(":");
-            if (credentials[0].equals(username) && credentials[1].equals(password)) {
-            String bio = credentials[2];
-            // Create User object and save information
-        newUser = new User(username, bio, password); // Assuming User constructor takes these parameters
-        saveUserInformation(newUser);
+// private boolean verifyCredentials(String username, String password) {
+//     try (BufferedReader reader = new BufferedReader(new FileReader("quackstagram_db-main/quackstagram_db/src/data/credentials.txt"))) {
+//         String line;
+//         while ((line = reader.readLine()) != null) {
+//             String[] credentials = line.split(":");
+//             if (credentials[0].equals(username) && credentials[1].equals(password)) {
+//             String bio = credentials[2];
+//             // Create User object and save information
+//         newUser = new User(username, bio, password); // Assuming User constructor takes these parameters
+//         saveUserInformation(newUser);
     
-                return true;
-            }
-        }
-    } catch (IOException e) {
-        e.printStackTrace();
-    }
-    return false;
-}
+//                 return true;
+//             }
+//         }
+//     } catch (IOException e) {
+//         e.printStackTrace();
+//     }
+//     return false;
+// }
 
    private void saveUserInformation(User user) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("quackstagram_db-main/quackstagram_db/src/data/users.txt", false))) {
