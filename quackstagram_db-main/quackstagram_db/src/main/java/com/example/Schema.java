@@ -3,62 +3,54 @@ package com.example;
 import java.sql.*;
 
 public class Schema {
-    private final String dbUrl = "jdbc:mysql://localhost:3306/quackstagram";
-    private final String dbUsername = "root";
-    private  final String password = "";
-
-       
     public static void main(String[] args) {
-    String dbUrl = "jdbc:mysql://localhost2:3306/quackstagram";
-    String dbUsername = "root";
-    String password = "";
-    try (Connection connection = DriverManager.getConnection(dbUrl, dbUsername, password)) {
-        Statement stmnt = connection.createStatement();
-        String query = 
-        "CREATE TABLE IF NOT EXISTS User (\n" + //
-                            "    id INT PRIMARY KEY,\n" + //
-                            "    name VARCHAR(100) NOT NULL,\n" + //
-                            "    password VARCHAR(100) NOT NULL\n" + //
-                            ");\n" + //
-                            "\n" + //
-                            "CREATE TABLE IF NOT EXISTS UserFollows (\n" + //
-                            "    follower_id INT,\n" + //
-                            "    followed_id INT,\n" + //
-                            "    PRIMARY KEY (follower_id, followed_id),\n" + //
-                            "    FOREIGN KEY (follower_id) REFERENCES User(id),\n" + //
-                            "    FOREIGN KEY (followed_id) REFERENCES User(id)\n" + //
-                            ");\n" + //
-                            "\n" + //
-                            "CREATE TABLE IF NOT EXISTS Post (\n" + //
-                            "    id INT PRIMARY KEY AUTO_INCREMENT,\n" + //
-                            "    user_id INT NOT NULL,\n" + //
-                            "    bio TEXT,\n" + //
-                            "    image VARCHAR(255),\n" + //
-                            "    FOREIGN KEY (user_id) REFERENCES User(id)\n" + //
-                            ");\n" + //
-                            "\n" + //
-                            "CREATE TABLE IF NOT EXISTS Like⁠ (\n" + //
-                            "    user_id INT,\n" + //
-                            "    post_id INT,\n" + //
-                            "    PRIMARY KEY (user_id, post_id),\n" + //
-                            "    FOREIGN KEY (user_id) REFERENCES User(id),\n" + //
-                            "    FOREIGN KEY (post_id) REFERENCES Post(id)\n" + //
-                            ");\n" + //
-                            "\n" + //
-                            "CREATE TABLE IF NOT EXISTS Notification (\n" + //
-                            "    id INT PRIMARY KEY AUTO_INCREMENT,\n" + //
-                            "    post_id INT NOT NULL,\n" + //
-                            "    dateTime DATETIME NOT NULL,\n" + //
-                            "    FOREIGN KEY (post_id) REFERENCES Post(id)\n" + //
-                            ");";
-            stmnt.executeQuery(query);
+        String dbUrl = "jdbc:mysql://localhost:3306/quackstagram";
+        String dbUsername = "root";
+        String password = ""; 
 
-    } catch (SQLException e) {
-        
-        e.printStackTrace();
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUsername, password)) {
+            Statement stmnt = connection.createStatement();
+
+            stmnt.execute("CREATE TABLE IF NOT EXISTS User (" +
+                    "id INT PRIMARY KEY," +
+                    "name VARCHAR(100) NOT NULL," +
+                    "password VARCHAR(100) NOT NULL" +
+                    ");");
+
+            stmnt.execute("CREATE TABLE IF NOT EXISTS UserFollows (" +
+                    "follower_id INT," +
+                    "followed_id INT," +
+                    "PRIMARY KEY (follower_id, followed_id)," +
+                    "FOREIGN KEY (follower_id) REFERENCES User(id)," +
+                    "FOREIGN KEY (followed_id) REFERENCES User(id)" +
+                    ");");
+
+            stmnt.execute("CREATE TABLE IF NOT EXISTS Post (" +
+                    "id INT PRIMARY KEY AUTO_INCREMENT," +
+                    "user_id INT NOT NULL," +
+                    "bio TEXT," +
+                    "image VARCHAR(255)," +
+                    "FOREIGN KEY (user_id) REFERENCES User(id)" +
+                    ");");
+
+            stmnt.execute("CREATE TABLE IF NOT EXISTS `Like` (" +  // "Like" is a reserved word in SQL
+                    "user_id INT," +
+                    "post_id INT," +
+                    "PRIMARY KEY (user_id, post_id)," +
+                    "FOREIGN KEY (user_id) REFERENCES User(id)," +
+                    "FOREIGN KEY (post_id) REFERENCES Post(id)" +
+                    ");");
+
+            stmnt.execute("CREATE TABLE IF NOT EXISTS Notification (" +
+                    "id INT PRIMARY KEY AUTO_INCREMENT," +
+                    "post_id INT NOT NULL," +
+                    "dateTime DATETIME NOT NULL," +
+                    "FOREIGN KEY (post_id) REFERENCES Post(id)" +
+                    ");");
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
-
-        
-    }
-
 }
