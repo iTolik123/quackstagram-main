@@ -14,8 +14,7 @@ public class Schema {
 
     private final String dbUrl = "jdbc:mysql://localhost:3306/quackstagram";
     private final String dbUsername = "root";
-    private final String password = "password";
-    private User newuser;
+    private final String password = "";
 
     public Schema() {
 
@@ -25,7 +24,8 @@ public class Schema {
             stmnt.execute("CREATE TABLE IF NOT EXISTS User ("
                     + "id INT PRIMARY KEY AUTO_INCREMENT,"
                     + "name VARCHAR(100) NOT NULL,"
-                    + "password VARCHAR(100) NOT NULL"
+                    + "password VARCHAR(100) NOT NULL,"
+                    + "bio VARCHAR(100)"
                     + ");");
 
             stmnt.execute("CREATE TABLE IF NOT EXISTS UserFollows ("
@@ -65,16 +65,17 @@ public class Schema {
         }
     }
 
-    public boolean verifyCredentials(String username, String password) {
+    public User verifyCredentials(String username, String password) {
         String query = "SELECT * FROM User WHERE User.name = ? AND User.password = ?";
         String check_username = "";
         String check_password = "";
+        ResultSet rs = null;
 
         try (Connection connection = DriverManager.getConnection(this.dbUrl, this.dbUsername, this.password)) {
             PreparedStatement stmnt = connection.prepareStatement(query);
             stmnt.setString(1, username);
             stmnt.setString(2, password);
-            ResultSet rs = stmnt.executeQuery();
+            rs = stmnt.executeQuery();
             while (rs.next()) {
 
                 check_username = rs.getString(2);
@@ -85,11 +86,11 @@ public class Schema {
         }
         if (check_password.equals(password) && check_username.equals(username)) {
             String bio = "";
-            this.newuser = new User(username, bio, password); // Assuming User constructor takes these parameters
-            saveUserInformation(this.newuser);
-            return true;
+            User newuser = new User(username, bio, password); // Assuming User constructor takes these parameters
+            saveUserInformation(newuser);
+            return newuser;
         }
-        return false;
+        return null;
     }
 
     public boolean verifyCredentials(String username){
@@ -122,21 +123,21 @@ public class Schema {
     }
 
     public boolean insertUser(String username, String password, String bio) {
-        String query = "INSERT INTO Users(name, password, bio) VALUES (?,?,?)";
-        String check_username = "";
-        String check_password = "";
-
+        String query = "INSERT INTO User(name, password, bio) VALUES (?, ?, ?)";
+    
         try (Connection connection = DriverManager.getConnection(this.dbUrl, this.dbUsername, this.password)) {
             PreparedStatement stmnt = connection.prepareStatement(query);
             stmnt.setString(1, username);
             stmnt.setString(2, password);
             stmnt.setString(3, bio);
-            ResultSet rs = stmnt.executeQuery();
+            
+            stmnt.executeUpdate();  
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
         return true;
     }
+    
 
 }

@@ -128,6 +128,7 @@ public class SignUpUI extends JFrame {
         if (doesUsernameExist(username)) {
             JOptionPane.showMessageDialog(this, "Username already exists. Please choose a different username.", "Error", JOptionPane.ERROR_MESSAGE);
         } else {
+            System.out.println("aaas");
             saveCredentials(username, password, bio);
             handleProfilePictureUpload();
             dispose();
@@ -177,7 +178,7 @@ public class SignUpUI extends JFrame {
     
     private void saveCredentials(String username, String password, String bio) {
         Schema s = new Schema();
-        if(s.verifyCredentials(username)){
+        if(!s.verifyCredentials(username)){
             s.insertUser(username, password, bio);
         }
     }

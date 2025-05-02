@@ -111,7 +111,11 @@ public class SignInUI extends JFrame {
     String enteredPassword = txtPassword.getText();
     Schema scheama = new Schema();
     System.out.println(enteredUsername+" <-> "+enteredPassword);
-    if (scheama.verifyCredentials(enteredUsername, enteredPassword)) {
+    if (null != scheama.verifyCredentials(enteredUsername, enteredPassword)) {
+        //create new user
+        this.newUser = scheama.verifyCredentials(enteredUsername, enteredPassword);
+
+
         System.out.println("It worked");
          // Close the SignUpUI frame
     dispose();
