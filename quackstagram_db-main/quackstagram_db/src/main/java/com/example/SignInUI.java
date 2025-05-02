@@ -137,7 +137,7 @@ private void onRegisterNowClicked(ActionEvent event) {
 }
 
 private boolean verifyCredentials(String username, String password) {
-    try (BufferedReader reader = new BufferedReader(new FileReader("data/credentials.txt"))) {
+    try (BufferedReader reader = new BufferedReader(new FileReader("quackstagram_db-main/quackstagram_db/src/data/credentials.txt"))) {
         String line;
         while ((line = reader.readLine()) != null) {
             String[] credentials = line.split(":");

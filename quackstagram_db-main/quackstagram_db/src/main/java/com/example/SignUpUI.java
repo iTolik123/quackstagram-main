@@ -22,8 +22,8 @@ public class SignUpUI extends JFrame {
     private JButton btnRegister;
     private JLabel lblPhoto;
     private JButton btnUploadPhoto;
-    private final String credentialsFilePath = "data/credentials.txt";
-    private final String profilePhotoStoragePath = "img/storage/profile/";
+    private final String credentialsFilePath = "quackstagram_db/src/data/credentials.txt";
+    private final String profilePhotoStoragePath = "quackstagram_db/src/img/storage/profile/";
     private JButton btnSignIn;
 
 
