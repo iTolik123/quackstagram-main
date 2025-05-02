@@ -176,11 +176,9 @@ public class SignUpUI extends JFrame {
     }
     
     private void saveCredentials(String username, String password, String bio) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("data/credentials.txt", true))) {
-            writer.write(username + ":" + password + ":" + bio);
-            writer.newLine();
-        } catch (IOException e) {
-            e.printStackTrace();
+        Schema s = new Schema();
+        if(s.verifyCredentials(username)){
+            s.insertUser(username, password, bio);
         }
     }
         
