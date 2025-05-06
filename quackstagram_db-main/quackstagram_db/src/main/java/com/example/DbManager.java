@@ -1,67 +1,47 @@
 package com.example;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-
-public class Schema {
+import java.util.stream.Collectors;
+public class DbManager {
 
     private final String dbUrl = "jdbc:mysql://localhost:3306/quackstagram";
     private final String dbUsername = "root";
     private final String password = "";
 
-    public Schema() {
+    public DbManager() {
 
         try (Connection connection = DriverManager.getConnection(dbUrl, dbUsername, password)) {
-            Statement stmnt = connection.createStatement();
+            String sql = readSqlFile("Schema.sql");
 
-            stmnt.execute("CREATE TABLE IF NOT EXISTS User ("
-                    + "id INT PRIMARY KEY AUTO_INCREMENT,"
-                    + "name VARCHAR(100) NOT NULL,"
-                    + "password VARCHAR(100) NOT NULL,"
-                    + "bio VARCHAR(100)"
-                    + ");");
-
-            stmnt.execute("CREATE TABLE IF NOT EXISTS UserFollows ("
-                    + "follower_id INT,"
-                    + "followed_id INT,"
-                    + "PRIMARY KEY (follower_id, followed_id),"
-                    + "FOREIGN KEY (follower_id) REFERENCES User(id),"
-                    + "FOREIGN KEY (followed_id) REFERENCES User(id)"
-                    + ");");
-
-            stmnt.execute("CREATE TABLE IF NOT EXISTS Post ("
-                    + "id INT PRIMARY KEY AUTO_INCREMENT,"
-                    + "user_id INT NOT NULL,"
-                    + "bio TEXT,"
-                    + "image VARCHAR(255),"
-                    + "FOREIGN KEY (user_id) REFERENCES User(id)"
-                    + ");");
-
-            stmnt.execute("CREATE TABLE IF NOT EXISTS `Like` ("
-                    + // "Like" is a reserved word in SQL
-                    "user_id INT,"
-                    + "post_id INT,"
-                    + "PRIMARY KEY (user_id, post_id),"
-                    + "FOREIGN KEY (user_id) REFERENCES User(id),"
-                    + "FOREIGN KEY (post_id) REFERENCES Post(id)"
-                    + ");");
-
-            stmnt.execute("CREATE TABLE IF NOT EXISTS Notification ("
-                    + "id INT PRIMARY KEY AUTO_INCREMENT,"
-                    + "post_id INT NOT NULL,"
-                    + "dateTime DATETIME NOT NULL,"
-                    + "FOREIGN KEY (post_id) REFERENCES Post(id)"
-                    + ");");
+            for (String statement : sql.split(";")) {
+                if (!statement.trim().isEmpty()) {
+                    try (Statement stmnt = connection.createStatement()) {
+                        stmnt.execute(statement);
+                    }
+                }
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    private String readSqlFile(String fileName) throws IOException {
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(fileName);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            return reader.lines().collect(Collectors.joining("\n"));
         }
     }
 

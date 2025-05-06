@@ -177,7 +177,7 @@ public class SignUpUI extends JFrame {
     }
     
     private void saveCredentials(String username, String password, String bio) {
-        Schema s = new Schema();
+        DbManager s = new DbManager();
         if(!s.verifyCredentials(username)){
             s.insertUser(username, password, bio);
         }
