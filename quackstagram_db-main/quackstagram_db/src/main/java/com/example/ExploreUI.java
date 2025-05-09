@@ -70,14 +70,10 @@ public class ExploreUI extends JFrame {
         
     }
     private JPanel createMainContentPanel() {
-        // Create the main content panel with search and image grid
-        // Search bar at the top
         JPanel searchPanel = new JPanel(new BorderLayout());
         JTextField searchField = new JTextField(" Search Users");
         searchPanel.add(searchField, BorderLayout.CENTER);
-        searchPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, searchField.getPreferredSize().height)); // Limit the height
-
-        // Image Grid
+        searchPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, searchField.getPreferredSize().height)); 
         JPanel imageGridPanel = new JPanel(new GridLayout(0, 3, 2, 2)); // 3 columns, auto rows
 
         // Load images from the database and save them to the directory

@@ -325,8 +325,8 @@ public class DbManager {
         String query = "SELECT postName, image FROM Post";
 
         try (Connection conn = DriverManager.getConnection(dbUrl, dbUsername, password);
-             PreparedStatement stmnt = conn.prepareStatement(query);
-             ResultSet rs = stmnt.executeQuery()) {
+            PreparedStatement stmnt = conn.prepareStatement(query);
+            ResultSet rs = stmnt.executeQuery()) {
 
             while (rs.next()) {
                 String imageName = rs.getString("postName");
@@ -458,8 +458,8 @@ public class DbManager {
     public java.util.List<String> getUserImages(String username) {
         java.util.List<String> imagePaths = new java.util.ArrayList<>();
         String query = "SELECT Post.postName, Post.image FROM Post " +
-                       "INNER JOIN User ON Post.user_id = User.id " +
-                       "WHERE User.name = ?";
+                       "INNER JOIN user ON Post.user_id = user.id " +
+                       "WHERE user.name = ?";
         String outputDir = "img/store/user_images/";
 
         try (Connection connection = DriverManager.getConnection(this.dbUrl, this.dbUsername, this.password);
@@ -468,8 +468,8 @@ public class DbManager {
             stmnt.setString(1, username);
             try (ResultSet rs = stmnt.executeQuery()) {
                 while (rs.next()) {
-                    String imageName = rs.getString("name");
-                    InputStream input = rs.getBinaryStream("data");
+                    String imageName = rs.getString("postName");
+                    InputStream input = rs.getBinaryStream("image");
 
                     File dir = new File(outputDir);
                     if (!dir.exists()) {
