@@ -19,7 +19,7 @@ public class DbManager {
 
     private final String dbUrl = "jdbc:mysql://localhost:3306/quackstagram";
     private final String dbUsername = "root";
-    private final String password = "password";
+    private final String password = "";
 
     public DbManager() {
         try (Connection connection = DriverManager.getConnection(dbUrl, dbUsername, password)) {

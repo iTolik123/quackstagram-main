@@ -94,7 +94,7 @@ public class ImageUploadUI extends JFrame {
                 String fileExtension = getFileExtension(selectedFile);
                 String newFileName = username + "_" + imageId + "." + fileExtension;
     
-                Path destPath = Paths.get("img", "uploaded", newFileName);
+                Path destPath = Paths.get("quackstagram_db-main/quackstagram_db/src/img", "uploaded", newFileName);
                 Files.copy(selectedFile.toPath(), destPath, StandardCopyOption.REPLACE_EXISTING);
     
                 // Save the bio and image ID to a text file
@@ -165,7 +165,7 @@ public class ImageUploadUI extends JFrame {
     }
     
     private void saveImageInfo(String imageId, String username, String bio) throws IOException {
-        Path infoFilePath = Paths.get("img", "image_details.txt");
+        Path infoFilePath = Paths.get("quackstagram_db-main/quackstagram_db/src/img", "image_details.txt");
         if (!Files.exists(infoFilePath)) {
             Files.createFile(infoFilePath);
         }
@@ -211,7 +211,7 @@ public class ImageUploadUI extends JFrame {
    }
 
    private String readUsername() throws IOException {
-    Path usersFilePath = Paths.get("data", "users.txt");
+    Path usersFilePath = Paths.get("quackstagram_db-main/quackstagram_db/src/data", "users.txt");
     try (BufferedReader reader = Files.newBufferedReader(usersFilePath)) {
         String line = reader.readLine();
         if (line != null) {
@@ -229,15 +229,15 @@ public class ImageUploadUI extends JFrame {
         navigationPanel.setLayout(new BoxLayout(navigationPanel, BoxLayout.X_AXIS));
         navigationPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        navigationPanel.add(createIconButton("img/icons/home.png", "home"));
+        navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/img/icons/home.png", "home"));
         navigationPanel.add(Box.createHorizontalGlue());
-        navigationPanel.add(createIconButton("img/icons/search.png","explore"));
+        navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/img/icons/search.png","explore"));
         navigationPanel.add(Box.createHorizontalGlue());
-        navigationPanel.add(createIconButton("img/icons/add.png"," "));
+        navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/img/icons/add.png"," "));
         navigationPanel.add(Box.createHorizontalGlue());
-        navigationPanel.add(createIconButton("img/icons/heart.png","notification"));
+        navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/img/icons/heart.png","notification"));
         navigationPanel.add(Box.createHorizontalGlue());
-        navigationPanel.add(createIconButton("img/icons/profile.png", "profile"));
+        navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/img/icons/profile.png", "profile"));
 
         return navigationPanel;
    }
@@ -271,7 +271,7 @@ public class ImageUploadUI extends JFrame {
         String loggedInUsername = "";
  
          // Read the logged-in user's username from users.txt
-     try (BufferedReader reader = Files.newBufferedReader(Paths.get("data", "users.txt"))) {
+     try (BufferedReader reader = Files.newBufferedReader(Paths.get("quackstagram_db-main/quackstagram_db/src/data", "users.txt"))) {
          String line = reader.readLine();
          if (line != null) {
              loggedInUsername = line.split(":")[0].trim();

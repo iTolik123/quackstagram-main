@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 public class ImageLikesManager {
 
-    private final String likesFilePath = "data/likes.txt";
+    private final String likesFilePath = "quackstagram_db-main/quackstagram_db/src/data/likes.txt";
 
     // Method to like an image
     public void likeImage(String username, String imageID) throws IOException {

@@ -38,7 +38,7 @@ public class InstagramProfileUI extends JFrame {
         int followingCount = 0;
        
         // Step 1: Read image_details.txt to count the number of images posted by the user
-    Path imageDetailsFilePath = Paths.get("quackstagram_db-main/quackstagram_db/src/img", "quackstagram_db-main/quackstagram_db/src/image_details.txt");
+    Path imageDetailsFilePath = Paths.get("quackstagram_db-main/quackstagram_db/src/img", "image_details.txt");
     try (BufferedReader imageDetailsReader = Files.newBufferedReader(imageDetailsFilePath)) {
         String line;
         while ((line = imageDetailsReader.readLine()) != null) {
@@ -51,7 +51,7 @@ public class InstagramProfileUI extends JFrame {
     }
 
     // Step 2: Read following.txt to calculate followers and following
-    Path followingFilePath = Paths.get("quackstagram_db-main/quackstagram_db/src/data", "quackstagram_db-main/quackstagram_db/src/following.txt");
+    Path followingFilePath = Paths.get("quackstagram_db-main/quackstagram_db/src/data", "following.txt");
     try (BufferedReader followingReader = Files.newBufferedReader(followingFilePath)) {
         String line;
         while ((line = followingReader.readLine()) != null) {
@@ -76,7 +76,7 @@ public class InstagramProfileUI extends JFrame {
 
     String bio = "";
 
-    Path bioDetailsFilePath = Paths.get("quackstagram_db-main/quackstagram_db/src/data", "quackstagram_db-main/quackstagram_db/src/credentials.txt");
+    Path bioDetailsFilePath = Paths.get("quackstagram_db-main/quackstagram_db/src/data", "credentials.txt");
     try (BufferedReader bioDetailsReader = Files.newBufferedReader(bioDetailsFilePath)) {
         String line;
         while ((line = bioDetailsReader.readLine()) != null) {
@@ -145,7 +145,7 @@ public class InstagramProfileUI extends JFrame {
         String loggedInUsername = "";
 
         // Read the logged-in user's username from users.txt
-    try (BufferedReader reader = Files.newBufferedReader(Paths.get("quackstagram_db-main/quackstagram_db/src/data", "quackstagram_db-main/quackstagram_db/src/users.txt"))) {
+    try (BufferedReader reader = Files.newBufferedReader(Paths.get("quackstagram_db-main/quackstagram_db/src/data", "users.txt"))) {
         String line = reader.readLine();
         if (line != null) {
             loggedInUsername = line.split(":")[0].trim();
@@ -158,7 +158,7 @@ public class InstagramProfileUI extends JFrame {
     
        // Header Panel
         JPanel headerPanel = new JPanel();
-        try (Stream<String> lines = Files.lines(Paths.get("data", "users.txt"))) {
+        try (Stream<String> lines = Files.lines(Paths.get("quackstagram_db-main/quackstagram_db/src/data", "users.txt"))) {
             isCurrentUser = lines.anyMatch(line -> line.startsWith(currentUser.getUsername() + ":"));
         } catch (IOException e) {
             e.printStackTrace();  // Log or handle the exception as appropriate
@@ -198,7 +198,7 @@ JButton followButton;
         followButton = new JButton("Follow");
 
         // Check if the current user is already being followed by the logged-in user
-        Path followingFilePath = Paths.get("quackstagram_db-main/quackstagram_db/src/data", "quackstagram_db-main/quackstagram_db/src/data/following.txt");
+        Path followingFilePath = Paths.get("quackstagram_db-main/quackstagram_db/src/data", "following.txt");
         try (BufferedReader reader = Files.newBufferedReader(followingFilePath)) {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -270,8 +270,8 @@ headerPanel.add(profileNameAndBioPanel);
 
 
    private void handleFollowAction(String usernameToFollow) {
-    Path followingFilePath = Paths.get("quackstagram_db-main/quackstagram_db/src/data", "quackstagram_db-main/quackstagram_db/src/following.txt");
-    Path usersFilePath = Paths.get("quackstagram_db-main/quackstagram_db/src/data", "quackstagram_db-main/quackstagram_db/src/users.txt");
+    Path followingFilePath = Paths.get("quackstagram_db-main/quackstagram_db/src/data", "following.txt");
+    Path usersFilePath = Paths.get("quackstagram_db-main/quackstagram_db/src/data", "users.txt");
     String currentUserUsername = "";
 
     try {
@@ -341,7 +341,7 @@ headerPanel.add(profileNameAndBioPanel);
         navigationPanel.add(Box.createHorizontalGlue());
         navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/img/icons/heart.png","notification"));
         navigationPanel.add(Box.createHorizontalGlue());
-        navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/mg/icons/profile.png", "profile"));
+        navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/img/icons/profile.png", "profile"));
 
         return navigationPanel;
 

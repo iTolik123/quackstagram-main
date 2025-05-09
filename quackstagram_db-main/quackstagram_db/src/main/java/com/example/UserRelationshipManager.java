@@ -6,7 +6,7 @@ import java.util.List;
 
 public class UserRelationshipManager {
 
-    private final String followersFilePath = "data/followers.txt";
+    private final String followersFilePath = "quackstagram_db-main/quackstagram_db/src/data/followers.txt";
 
     // Method to follow a user
     public void followUser(String follower, String followed) throws IOException {
