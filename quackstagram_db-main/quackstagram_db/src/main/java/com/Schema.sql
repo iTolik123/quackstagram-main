@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS User (
     bio VARCHAR(100)
 );
 
+
 CREATE TABLE IF NOT EXISTS UserFollows (
     follower_id INT,
     followed_id INT,
@@ -35,3 +36,15 @@ CREATE TABLE IF NOT EXISTS Notification (
     dateTime DATETIME NOT NULL,
     FOREIGN KEY (post_id) REFERENCES Post(id)
 );
+
+CREATE TABLE IF NOT EXISTS `comment` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `id_user` int NOT NULL,
+  `content` varchar(255) DEFAULT NULL,
+  `id_post` int NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `comment_user_FK` (`id_user`),
+  KEY `comment_post_FK` (`id_post`),
+  CONSTRAINT `comment_post_FK` FOREIGN KEY (`id_post`) REFERENCES `post` (`id`),
+  CONSTRAINT `comment_user_FK` FOREIGN KEY (`id_user`) REFERENCES `user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

@@ -1,18 +1,38 @@
 DELIMITER $$
 
-CREATE TRIGGER trg_create_notification_after_like
+CREATE PROCEDURE AddNotification(IN pid INT)
+BEGIN
+    INSERT INTO Notification (post_id, dateTime)
+    VALUES (pid, NOW());
+END$$
+
+
+CREATE FUNCTION GetLikeCount(postId INT) RETURNS INT
+DETERMINISTIC
+BEGIN
+    DECLARE likeCount INT;
+    SELECT COUNT(*) INTO likeCount FROM `Like` WHERE post_id = postId;
+    RETURN likeCount;
+END$$
+
+
+CREATE TRIGGER after_like_adds_notification
 AFTER INSERT ON `Like`
 FOR EACH ROW
 BEGIN
-    INSERT INTO Notification (post_id, dateTime)
-    VALUES (NEW.post_id, NOW());
+    DECLARE totalLikes INT;
+
+
+    CALL AddNotification(NEW.post_id);
+
+
+    SET totalLikes = GetLikeCount(NEW.post_id);
+
+
 END$$
 
-DELIMITER ;
 
-DELIMITER $$
-
-CREATE TRIGGER trg_prevent_self_follow
+CREATE TRIGGER prevent_self_follow
 BEFORE INSERT ON UserFollows
 FOR EACH ROW
 BEGIN
@@ -20,18 +40,6 @@ BEGIN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Un utente non può seguire se stesso';
     END IF;
-END$$
-
-DELIMITER ;
-
-DELIMITER $$
-
-CREATE TRIGGER trg_log_post_creation
-AFTER INSERT ON Post
-FOR EACH ROW
-BEGIN
-    INSERT INTO PostLog (post_id, user_id, created_at)
-    VALUES (NEW.id, NEW.user_id, NOW());
 END$$
 
 DELIMITER ;
