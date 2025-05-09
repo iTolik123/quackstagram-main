@@ -1,8 +1,12 @@
 package com.example;
 
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -12,12 +16,23 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.*;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 
 public class ExploreUI extends JFrame {
 
@@ -54,48 +69,66 @@ public class ExploreUI extends JFrame {
 
         
     }
-    
     private JPanel createMainContentPanel() {
         // Create the main content panel with search and image grid
-      // Search bar at the top
+        // Search bar at the top
         JPanel searchPanel = new JPanel(new BorderLayout());
         JTextField searchField = new JTextField(" Search Users");
         searchPanel.add(searchField, BorderLayout.CENTER);
         searchPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, searchField.getPreferredSize().height)); // Limit the height
-    
-       // Image Grid
-    JPanel imageGridPanel = new JPanel(new GridLayout(0, 3, 2, 2)); // 3 columns, auto rows
 
-    // Load images from the uploaded folder
-    File imageDir = new File("quackstagram_db-main/quackstagram_db/src/data/img/uploaded");
-    if (imageDir.exists() && imageDir.isDirectory()) {
-        File[] imageFiles = imageDir.listFiles((dir, name) -> name.matches(".*\\.(png|jpg|jpeg)"));
-        if (imageFiles != null) {
-            for (File imageFile : imageFiles) {
-                ImageIcon imageIcon = new ImageIcon(new ImageIcon(imageFile.getPath()).getImage().getScaledInstance(IMAGE_SIZE, IMAGE_SIZE, Image.SCALE_SMOOTH));
+        // Image Grid
+        JPanel imageGridPanel = new JPanel(new GridLayout(0, 3, 2, 2)); // 3 columns, auto rows
+
+        // Load images from the database and save them to the directory
+        DbManager dbConnection = new DbManager();
+        String path = "quackstagram_db-main/quackstagram_db/src/data/img";
+        try {
+            // Load image data from the database
+            java.util.List<ImageData> dbImages = dbConnection.loadImagesFromDb();
+
+            // Ensure the directory exists
+            File imageDirectory = new File(path);
+            if (!imageDirectory.exists()) {
+                imageDirectory.mkdirs();
+            }
+
+            // Save images to the directory and display them
+            for (ImageData imageData : dbImages) {
+                String imagePath = path + File.separator + imageData.getImageName();
+                File imageFile = new File(imagePath);
+
+                // Save the image to the directory if it doesn't already exist
+                if (!imageFile.exists()) {
+                    Files.write(Paths.get(imagePath), imageData.getImageBytes());
+                }
+
+                // Display the image
+                ImageIcon imageIcon = new ImageIcon(new ImageIcon(imagePath).getImage().getScaledInstance(IMAGE_SIZE, IMAGE_SIZE, Image.SCALE_SMOOTH));
                 JLabel imageLabel = new JLabel(imageIcon);
                 imageLabel.addMouseListener(new MouseAdapter() {
                     @Override
                     public void mouseClicked(MouseEvent e) {
-                        displayImage(imageFile.getPath()); // Call method to display the clicked image
+                        displayImage(imagePath); // Call method to display the clicked image
                     }
                 });
                 imageGridPanel.add(imageLabel);
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
+        JScrollPane scrollPane = new JScrollPane(imageGridPanel);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+
+        // Main content panel that holds both the search bar and the image grid
+        JPanel mainContentPanel = new JPanel();
+        mainContentPanel.setLayout(new BoxLayout(mainContentPanel, BoxLayout.Y_AXIS));
+        mainContentPanel.add(searchPanel);
+        mainContentPanel.add(scrollPane); // This will stretch to take up remaining space
+        return mainContentPanel;
     }
-
-    JScrollPane scrollPane = new JScrollPane(imageGridPanel);
-    scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-    scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-
-    // Main content panel that holds both the search bar and the image grid
-    JPanel mainContentPanel = new JPanel();
-    mainContentPanel.setLayout(new BoxLayout(mainContentPanel, BoxLayout.Y_AXIS));
-    mainContentPanel.add(searchPanel);
-    mainContentPanel.add(scrollPane); // This will stretch to take up remaining space
-    return mainContentPanel;
-}
 
    
     private JPanel createHeaderPanel() {

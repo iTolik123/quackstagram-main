@@ -120,40 +120,41 @@ public class SignInUI extends JFrame {
 
     }
 
-   private void onSignInClicked(ActionEvent event) {
-    String enteredUsername = txtUsername.getText();
-    String enteredPassword = txtPassword.getText();
-    DbManager scheama = new DbManager();
-    System.out.println(enteredUsername+" <-> "+enteredPassword);
-    if (null != scheama.verifyCredentials(enteredUsername, enteredPassword)) {
-        //create new user
-        this.newUser = scheama.verifyCredentials(enteredUsername, enteredPassword);
+    private void onSignInClicked(ActionEvent event) {
+        String enteredUsername = txtUsername.getText();
+        String enteredPassword = txtPassword.getText();
+        DbManager scheama = new DbManager();
+        System.out.println(enteredUsername+" <-> "+enteredPassword);
+        if (null != scheama.verifyCredentials(enteredUsername, enteredPassword)) {
+            //create new user
+            this.newUser = scheama.verifyCredentials(enteredUsername, enteredPassword);
 
 
-        System.out.println("It worked");
-         // Close the SignUpUI frame
-    dispose();
+            System.out.println("It worked");
+            // Close the SignUpUI frame
+            saveUserInformation(this.newUser);
+        dispose();
 
-    // Open the SignInUI frame
-    SwingUtilities.invokeLater(() -> {
-        InstagramProfileUI profileUI = new InstagramProfileUI(newUser);
-        profileUI.setVisible(true);
-    });
-    } else {
-        System.out.println("It Didn't");
+        // Open the SignInUI frame
+        SwingUtilities.invokeLater(() -> {
+            InstagramProfileUI profileUI = new InstagramProfileUI(newUser);
+            profileUI.setVisible(true);
+        });
+        } else {
+            System.out.println("It Didn't");
+        }
     }
-}
 
-private void onRegisterNowClicked(ActionEvent event) {
-    // Close the SignInUI frame
-    dispose();
+    private void onRegisterNowClicked(ActionEvent event) {
+        // Close the SignInUI frame
+        dispose();
 
-    // Open the SignUpUI frame
-    SwingUtilities.invokeLater(() -> {
-        SignUpUI signUpFrame = new SignUpUI();
-        signUpFrame.setVisible(true);
-    });
-}
+        // Open the SignUpUI frame
+        SwingUtilities.invokeLater(() -> {
+            SignUpUI signUpFrame = new SignUpUI();
+            signUpFrame.setVisible(true);
+        });
+    }
 
 // private boolean verifyCredentials(String username, String password) {
 //     try (BufferedReader reader = new BufferedReader(new FileReader("quackstagram_db-main/quackstagram_db/src/data/credentials.txt"))) {

@@ -1,16 +1,38 @@
 package com.example;
 
-import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class ImageUploadUI extends JFrame {
 
@@ -84,29 +106,29 @@ public class ImageUploadUI extends JFrame {
         fileChooser.setAcceptAllFileFilterUsed(false);
         FileNameExtensionFilter filter = new FileNameExtensionFilter("Image files", "png", "jpg", "jpeg");
         fileChooser.addChoosableFileFilter(filter);
-    
+
         int returnValue = fileChooser.showOpenDialog(null);
         if (returnValue == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
             try {
                 String username = readUsername(); // Read username from users.txt
-                int imageId = getNextImageId(username);
-                String fileExtension = getFileExtension(selectedFile);
-                String newFileName = username + "_" + imageId + "." + fileExtension;
-    
-                Path destPath = Paths.get("img", "uploaded", newFileName);
-                Files.copy(selectedFile.toPath(), destPath, StandardCopyOption.REPLACE_EXISTING);
-    
-                // Save the bio and image ID to a text file
-                saveImageInfo(username + "_" + imageId, username, bioTextArea.getText());
-    
-                // Load the image from the saved path
-                ImageIcon imageIcon = new ImageIcon(destPath.toString());
-    
+                DbManager dbManager = new DbManager();
+
+                // Save the image to the database
+                dbManager.saveImage(
+                    selectedFile.getAbsolutePath(),
+                    selectedFile.getName(),
+                    dbManager.getUserId(username), // Assuming a method to get user ID by username
+                    bioTextArea.getText()
+                );
+
+                // Load the image for preview
+                ImageIcon imageIcon = new ImageIcon(selectedFile.getAbsolutePath());
+
                 // Check if imagePreviewLabel has a valid size
                 if (imagePreviewLabel.getWidth() > 0 && imagePreviewLabel.getHeight() > 0) {
                     Image image = imageIcon.getImage();
-    
+
                     // Calculate the dimensions for the image preview
                     int previewWidth = imagePreviewLabel.getWidth();
                     int previewHeight = imagePreviewLabel.getHeight();
@@ -117,22 +139,24 @@ public class ImageUploadUI extends JFrame {
                     double scale = Math.min(widthRatio, heightRatio);
                     int scaledWidth = (int) (scale * imageWidth);
                     int scaledHeight = (int) (scale * imageHeight);
-    
+
                     // Set the image icon with the scaled image
                     imageIcon.setImage(image.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_SMOOTH));
                 }
-    
+
                 imagePreviewLabel.setIcon(imageIcon);
-    
+
                 // Update the flag to indicate that an image has been uploaded
                 imageUploaded = true;
-    
+
                 // Change the text of the upload button
                 uploadButton.setText("Upload Another Image");
-    
-                JOptionPane.showMessageDialog(this, "Image uploaded and preview updated!");
+
+                JOptionPane.showMessageDialog(this, "Image uploaded and saved to the database!");
             } catch (IOException ex) {
-                JOptionPane.showMessageDialog(this, "Error saving image: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Error reading image: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error saving image to database: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -211,7 +235,7 @@ public class ImageUploadUI extends JFrame {
    }
 
    private String readUsername() throws IOException {
-    Path usersFilePath = Paths.get("data", "users.txt");
+    Path usersFilePath = Paths.get("quackstagram_db-main/quackstagram_db/src/data/", "users.txt");
     try (BufferedReader reader = Files.newBufferedReader(usersFilePath)) {
         String line = reader.readLine();
         if (line != null) {

@@ -1,14 +1,25 @@
 package com.example;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Image;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 public class NotificationsUI extends JFrame {
 
@@ -29,6 +40,7 @@ public class NotificationsUI extends JFrame {
         // Reuse the header and navigation panel creation methods from the InstagramProfileUI class
         JPanel headerPanel = createHeaderPanel();
         JPanel navigationPanel = createNavigationPanel();
+        DbManager dbManager = new DbManager();
 
         // Content Panel for notifications
         JPanel contentPanel = new JPanel();
@@ -37,70 +49,33 @@ public class NotificationsUI extends JFrame {
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 
-   // Read the current username from users.txt
-   String currentUsername = "";
-   try (BufferedReader reader = Files.newBufferedReader(Paths.get("data", "users.txt"))) {
-       String line = reader.readLine();
-       if (line != null) {
-           currentUsername = line.split(":")[0].trim();
-       }
-   } catch (IOException e) {
-       e.printStackTrace();
-   }
-       
-   try (BufferedReader reader = Files.newBufferedReader(Paths.get("quackstagram_db-main/quackstagram_db/src/data", "quackstagram_db-main/quackstagram_db/src/notifications.txt"))) {
-    String line;
-    while ((line = reader.readLine()) != null) {
-        String[] parts = line.split(";");
-        if (parts[0].trim().equals(currentUsername)) {
-            // Format the notification message
-            String userWhoLiked = parts[1].trim();
-            String imageId = parts[2].trim();
-            String timestamp = parts[3].trim();
-            String notificationMessage = userWhoLiked + " liked your picture - " + getElapsedTime(timestamp) + " ago";
-
-            // Add the notification to the panel
-            JPanel notificationPanel = new JPanel(new BorderLayout());
-            notificationPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-            
-            JLabel notificationLabel = new JLabel(notificationMessage);
-            notificationPanel.add(notificationLabel, BorderLayout.CENTER);
-            
-            // Add profile icon (if available) and timestamp
-            // ... (Additional UI components if needed)
-
-            contentPanel.add(notificationPanel);
+        // Read the current username from users.txt
+        String currentUsername = "";
+        try (BufferedReader reader = Files.newBufferedReader(Paths.get("data", "users.txt"))) {
+            String line = reader.readLine();
+            if (line != null) {
+                currentUsername = line.split(":")[0].trim();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+       
+    java.util.List<String> notifications = dbManager.getUserNotifications(currentUsername);
+    for (String notificationMessage : notifications) {
+        // Add the notification to the panel
+        JPanel notificationPanel = new JPanel(new BorderLayout());
+        notificationPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        
+        JLabel notificationLabel = new JLabel(notificationMessage);
+        notificationPanel.add(notificationLabel, BorderLayout.CENTER);
+        
+        contentPanel.add(notificationPanel);
     }
-} catch (IOException e) {
-    e.printStackTrace();
-}
         // Add panels to frame
         add(headerPanel, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
         add(navigationPanel, BorderLayout.SOUTH);
     }
-
-private String getElapsedTime(String timestamp) {
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    LocalDateTime timeOfNotification = LocalDateTime.parse(timestamp, formatter);
-    LocalDateTime currentTime = LocalDateTime.now();
-
-    long daysBetween = ChronoUnit.DAYS.between(timeOfNotification, currentTime);
-    long minutesBetween = ChronoUnit.MINUTES.between(timeOfNotification, currentTime) % 60;
-
-    StringBuilder timeElapsed = new StringBuilder();
-    if (daysBetween > 0) {
-        timeElapsed.append(daysBetween).append(" day").append(daysBetween > 1 ? "s" : "");
-    }
-    if (minutesBetween > 0) {
-        if (daysBetween > 0) {
-            timeElapsed.append(" and ");
-        }
-        timeElapsed.append(minutesBetween).append(" minute").append(minutesBetween > 1 ? "s" : "");
-    }
-    return timeElapsed.toString();
-}
 
     private JPanel createHeaderPanel() {
        

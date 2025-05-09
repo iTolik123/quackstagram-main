@@ -1,20 +1,32 @@
 package com.example;
 
-import javax.swing.*;
-
-
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.awt.*;
-import java.nio.file.*;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.stream.Stream;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.SwingConstants;
 
 
 
@@ -32,75 +44,31 @@ public class InstagramProfileUI extends JFrame {
 
     public InstagramProfileUI(User user) {
         this.currentUser = user;
+        DbManager dbManager = new DbManager();
          // Initialize counts
         int imageCount = 0;
         int followersCount = 0;
         int followingCount = 0;
-       
-        // Step 1: Read image_details.txt to count the number of images posted by the user
-    Path imageDetailsFilePath = Paths.get("quackstagram_db-main/quackstagram_db/src/img", "quackstagram_db-main/quackstagram_db/src/image_details.txt");
-    try (BufferedReader imageDetailsReader = Files.newBufferedReader(imageDetailsFilePath)) {
-        String line;
-        while ((line = imageDetailsReader.readLine()) != null) {
-            if (line.contains("Username: " + currentUser.getUsername())) {
-                imageCount++;
-            }
-        }
-    } catch (IOException e) {
-        e.printStackTrace();
-    }
+        
+        imageCount = dbManager.getImageCount(currentUser.getUsername());
 
-    // Step 2: Read following.txt to calculate followers and following
-    Path followingFilePath = Paths.get("quackstagram_db-main/quackstagram_db/src/data", "quackstagram_db-main/quackstagram_db/src/following.txt");
-    try (BufferedReader followingReader = Files.newBufferedReader(followingFilePath)) {
-        String line;
-        while ((line = followingReader.readLine()) != null) {
-            String[] parts = line.split(":");
-            if (parts.length == 2) {
-                String username = parts[0].trim();
-                String[] followingUsers = parts[1].split(";");
-                if (username.equals(currentUser.getUsername())) {
-                    followingCount = followingUsers.length;
-                } else {
-                    for (String followingUser : followingUsers) {
-                        if (followingUser.trim().equals(currentUser.getUsername())) {
-                            followersCount++;
-                        }
-                    }
-                }
-            }
-        }
-    } catch (IOException e) {
-        e.printStackTrace();
-    }
+        followersCount = dbManager.getNumberOfFollowers(currentUser.getUsername());
 
-    String bio = "";
+        followingCount = dbManager.getNumberOfFollowing(currentUser.getUsername());
 
-    Path bioDetailsFilePath = Paths.get("quackstagram_db-main/quackstagram_db/src/data", "quackstagram_db-main/quackstagram_db/src/credentials.txt");
-    try (BufferedReader bioDetailsReader = Files.newBufferedReader(bioDetailsFilePath)) {
-        String line;
-        while ((line = bioDetailsReader.readLine()) != null) {
-            String[] parts = line.split(":");
-            if (parts[0].equals(currentUser.getUsername()) && parts.length >= 3) {
-                bio = parts[2];
-                break; // Exit the loop once the matching bio is found
-            }
-        }
-    } catch (IOException e) {
-        e.printStackTrace();
-    }
+        String bio = dbManager.getBio(currentUser.getUsername());
     
-    System.out.println("Bio for " + currentUser.getUsername() + ": " + bio);
-    currentUser.setBio(bio);
-    
+        System.out.println("Bio for " + currentUser.getUsername() + ": " + bio);
+        currentUser.setBio(bio);
+        
 
-    currentUser.setFollowersCount(followersCount);
-    currentUser.setFollowingCount(followingCount);
-    currentUser.setPostCount(imageCount);
+        currentUser.setFollowersCount(followersCount);
+        currentUser.setFollowingCount(followingCount);
+        currentUser.setPostCount(imageCount);
 
-    System.out.println(currentUser.getPostsCount());
+        System.out.println(currentUser.getPostsCount());
 
-     setTitle("DACS Profile");
+        setTitle("DACS Profile");
         setSize(WIDTH, HEIGHT);
         setMinimumSize(new Dimension(WIDTH, HEIGHT));
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -113,7 +81,7 @@ public class InstagramProfileUI extends JFrame {
     }
 
 
-      public InstagramProfileUI() {
+    public InstagramProfileUI() {
 
         setTitle("DACS Profile");
         setSize(WIDTH, HEIGHT);
@@ -141,24 +109,24 @@ public class InstagramProfileUI extends JFrame {
     }
 
     private JPanel createHeaderPanel() {
+        DbManager db = new DbManager();
         boolean isCurrentUser = false;
         String loggedInUsername = "";
 
-        // Read the logged-in user's username from users.txt
-    try (BufferedReader reader = Files.newBufferedReader(Paths.get("quackstagram_db-main/quackstagram_db/src/data", "quackstagram_db-main/quackstagram_db/src/users.txt"))) {
-        String line = reader.readLine();
-        if (line != null) {
-            loggedInUsername = line.split(":")[0].trim();
-            isCurrentUser = loggedInUsername.equals(currentUser.getUsername());
+        try (BufferedReader reader = Files.newBufferedReader(Paths.get("quackstagram_db-main/quackstagram_db/src/data", "users.txt"))) {
+            String line = reader.readLine();
+            if (line != null) {
+                loggedInUsername = line.split(":")[0].trim();
+                isCurrentUser = loggedInUsername.equals(currentUser.getUsername());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-    } catch (IOException e) {
-        e.printStackTrace();
-    }
 
     
        // Header Panel
         JPanel headerPanel = new JPanel();
-        try (Stream<String> lines = Files.lines(Paths.get("data", "users.txt"))) {
+        try (Stream<String> lines = Files.lines(Paths.get("quackstagram_db-main/quackstagram_db/src/data", "users.txt"))) {
             isCurrentUser = lines.anyMatch(line -> line.startsWith(currentUser.getUsername() + ":"));
         } catch (IOException e) {
             e.printStackTrace();  // Log or handle the exception as appropriate
@@ -172,7 +140,7 @@ public class InstagramProfileUI extends JFrame {
         topHeaderPanel.setBackground(new Color(249, 249, 249));
 
         // Profile image
-        ImageIcon profileIcon = new ImageIcon(new ImageIcon("quackstagram_db-main/quackstagram_db/src/img/storage/profile/"+currentUser.getUsername()+".png").getImage().getScaledInstance(PROFILE_IMAGE_SIZE, PROFILE_IMAGE_SIZE, Image.SCALE_SMOOTH));
+        ImageIcon profileIcon = new ImageIcon(new ImageIcon(db.getProfileImage(currentUser.getUsername())).getImage().getScaledInstance(PROFILE_IMAGE_SIZE, PROFILE_IMAGE_SIZE, Image.SCALE_SMOOTH));
         JLabel profileImage = new JLabel(profileIcon);
         profileImage.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         topHeaderPanel.add(profileImage, BorderLayout.WEST);
@@ -198,26 +166,13 @@ JButton followButton;
         followButton = new JButton("Follow");
 
         // Check if the current user is already being followed by the logged-in user
-        Path followingFilePath = Paths.get("quackstagram_db-main/quackstagram_db/src/data", "quackstagram_db-main/quackstagram_db/src/data/following.txt");
-        try (BufferedReader reader = Files.newBufferedReader(followingFilePath)) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(":");
-                if (parts[0].trim().equals(loggedInUsername)) {
-                    String[] followedUsers = parts[1].split(";");
-                    for (String followedUser : followedUsers) {
-                        if (followedUser.trim().equals(currentUser.getUsername())) {
-                            followButton.setText("Following");
-                            break;
-                        }
-                    }
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        DbManager dbManager = new DbManager();
+        boolean isFollowing = dbManager.isFollowing(loggedInUsername, currentUser.getUsername());
+        if (isFollowing) {
+            followButton.setText("Following");
         }
         followButton.addActionListener(e -> {
-            handleFollowAction(currentUser.getUsername());
+            
             followButton.setText("Following");
         });
     }
@@ -269,59 +224,6 @@ headerPanel.add(profileNameAndBioPanel);
     }
 
 
-   private void handleFollowAction(String usernameToFollow) {
-    Path followingFilePath = Paths.get("quackstagram_db-main/quackstagram_db/src/data", "quackstagram_db-main/quackstagram_db/src/following.txt");
-    Path usersFilePath = Paths.get("quackstagram_db-main/quackstagram_db/src/data", "quackstagram_db-main/quackstagram_db/src/users.txt");
-    String currentUserUsername = "";
-
-    try {
-        // Read the current user's username from users.txt
-        try (BufferedReader reader = Files.newBufferedReader(usersFilePath)) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(":");
-               currentUserUsername = parts[0];
-            }
-        }
-
-        System.out.println("Real user is "+currentUserUsername);
-        // If currentUserUsername is not empty, process following.txt
-        if (!currentUserUsername.isEmpty()) {
-            boolean found = false;
-            StringBuilder newContent = new StringBuilder();
-
-            // Read and process following.txt
-            if (Files.exists(followingFilePath)) {
-                try (BufferedReader reader = Files.newBufferedReader(followingFilePath)) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        String[] parts = line.split(":");
-                        if (parts[0].trim().equals(currentUserUsername)) {
-                            found = true;
-                            if (!line.contains(usernameToFollow)) {
-                                line = line.concat(line.endsWith(":") ? "" : "; ").concat(usernameToFollow);
-                            }
-                        }
-                        newContent.append(line).append("\n");
-                    }
-                }
-            }
-
-            // If the current user was not found in following.txt, add them
-            if (!found) {
-                newContent.append(currentUserUsername).append(": ").append(usernameToFollow).append("\n");
-            }
-
-            // Write the updated content back to following.txt
-            try (BufferedWriter writer = Files.newBufferedWriter(followingFilePath)) {
-                writer.write(newContent.toString());
-            }
-        }
-    } catch (IOException e) {
-        e.printStackTrace();
-    }
-}
-
     
 
     
@@ -347,38 +249,32 @@ headerPanel.add(profileNameAndBioPanel);
 
     }
 
-private void initializeImageGrid() {
-    contentPanel.removeAll(); // Clear existing content
-    contentPanel.setLayout(new GridLayout(0, 3, 5, 5)); // Grid layout for image grid
+    private void initializeImageGrid() {
+        contentPanel.removeAll(); // Clear existing content
+        contentPanel.setLayout(new GridLayout(0, 3, 5, 5)); // Grid layout for image grid
 
-    Path imageDir = Paths.get("quackstagram_db-main/quackstagram_db/src/img", "quackstagram_db-main/quackstagram_db/src/uploaded");
-    try (Stream<Path> paths = Files.list(imageDir)) {
-        paths.filter(path -> path.getFileName().toString().startsWith(currentUser.getUsername() + "_"))
-             .forEach(path -> {
-                 ImageIcon imageIcon = new ImageIcon(new ImageIcon(path.toString()).getImage().getScaledInstance(GRID_IMAGE_SIZE, GRID_IMAGE_SIZE, Image.SCALE_SMOOTH));
-                 JLabel imageLabel = new JLabel(imageIcon);
-                 imageLabel.addMouseListener(new MouseAdapter() {
-                     @Override
-                     public void mouseClicked(MouseEvent e) {
-                         displayImage(imageIcon); // Call method to display the clicked image
-                     }
-                 });
-                 contentPanel.add(imageLabel);
-             });
-    } catch (IOException ex) {
-        ex.printStackTrace();
-        // Handle exception (e.g., show a message or log)
+        DbManager dbManager = new DbManager();
+        dbManager.getUserImages(currentUser.getUsername()).forEach(imagePath -> {
+            ImageIcon imageIcon = new ImageIcon(new ImageIcon(imagePath).getImage().getScaledInstance(GRID_IMAGE_SIZE, GRID_IMAGE_SIZE, Image.SCALE_SMOOTH));
+            JLabel imageLabel = new JLabel(imageIcon);
+            imageLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                displayImage(imageIcon); // Call method to display the clicked image
+            }
+            });
+            contentPanel.add(imageLabel);
+        });
+
+        JScrollPane scrollPane = new JScrollPane(contentPanel);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+
+        add(scrollPane, BorderLayout.CENTER); // Add the scroll pane to the center
+
+        revalidate();
+        repaint();
     }
-
-    JScrollPane scrollPane = new JScrollPane(contentPanel);
-    scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-    scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-
-    add(scrollPane, BorderLayout.CENTER); // Add the scroll pane to the center
-
-    revalidate();
-    repaint();
-}
 
 
 

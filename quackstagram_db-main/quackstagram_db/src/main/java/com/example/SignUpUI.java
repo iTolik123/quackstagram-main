@@ -6,8 +6,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import javax.imageio.ImageIO;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -22,8 +20,8 @@ public class SignUpUI extends JFrame {
     private JButton btnRegister;
     private JLabel lblPhoto;
     private JButton btnUploadPhoto;
-    private final String credentialsFilePath = "quackstagram_db/src/data/credentials.txt";
-    private final String profilePhotoStoragePath = "quackstagram_db/src/img/storage/profile/";
+    private final String credentialsFilePath = "quackstagram_db-main/quackstagram_db/src/data/credentials.txt";
+    private final String profilePhotoStoragePath = "quackstagram_db-main/quackstagram_db/src/img/storage/profile/";
     private JButton btnSignIn;
 
 
@@ -119,7 +117,6 @@ public class SignUpUI extends JFrame {
         registerPanel.add(btnSignIn, BorderLayout.SOUTH);
     }
 
-
     private void onRegisterClicked(ActionEvent event) {
         String username = txtUsername.getText();
         String password = txtPassword.getText();
@@ -128,35 +125,35 @@ public class SignUpUI extends JFrame {
         if (doesUsernameExist(username)) {
             JOptionPane.showMessageDialog(this, "Username already exists. Please choose a different username.", "Error", JOptionPane.ERROR_MESSAGE);
         } else {
-            System.out.println("aaas");
-            saveCredentials(username, password, bio);
-            handleProfilePictureUpload();
+            String profileImagePath = null;
+            if (lblPhoto.getIcon() != null) {
+                profileImagePath = saveProfilePicture(new File(profilePhotoStoragePath + username + ".png"), username);
+            }
+
+            saveCredentials(username, password, bio, profileImagePath);
             dispose();
-    
-        // Open the SignInUI frame
-        SwingUtilities.invokeLater(() -> {
-            SignInUI signInFrame = new SignInUI();
-            signInFrame.setVisible(true);
-        });
+
+            // Open the SignInUI frame
+            SwingUtilities.invokeLater(() -> {
+                SignInUI signInFrame = new SignInUI();
+                signInFrame.setVisible(true);
+            });
         }
     }
+
+    private void saveCredentials(String username, String password, String bio, String profileImagePath) {
+        DbManager dbManager = new DbManager();
+        dbManager.insertUser(username, password, bio, profileImagePath);
+    }
+
     
     private boolean doesUsernameExist(String username) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(credentialsFilePath))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (line.startsWith(username + ":")) {
-                    return true;
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return false;
+        DbManager dbManager = new DbManager();
+        return dbManager.verifyCredentials(username);
     }
 
      // Method to handle profile picture upload
-     private void handleProfilePictureUpload() {
+    private void handleProfilePictureUpload() {
         JFileChooser fileChooser = new JFileChooser();
         FileNameExtensionFilter filter = new FileNameExtensionFilter("Image files", ImageIO.getReaderFileSuffixes());
         fileChooser.setFileFilter(filter);
@@ -165,14 +162,15 @@ public class SignUpUI extends JFrame {
             saveProfilePicture(selectedFile, txtUsername.getText());
         }
     }
-
-    private void saveProfilePicture(File file, String username) {
+    private String saveProfilePicture(File file, String username) {
         try {
             BufferedImage image = ImageIO.read(file);
             File outputFile = new File(profilePhotoStoragePath + username + ".png");
             ImageIO.write(image, "png", outputFile);
+            return outputFile.getAbsolutePath();
         } catch (IOException e) {
             e.printStackTrace();
+            return null;
         }
     }
     

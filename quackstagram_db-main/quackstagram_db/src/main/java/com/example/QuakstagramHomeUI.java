@@ -55,17 +55,17 @@ public class QuakstagramHomeUI extends JFrame {
         add(cardPanel, BorderLayout.CENTER);
         cardLayout.show(cardPanel, "Home"); // Start with the home view
         
-         // Header Panel (reuse from InstagramProfileUI or customize for home page)
-          // Header with the Register label
-          JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-          headerPanel.setBackground(new Color(51, 51, 51)); // Set a darker background for the header
-          JLabel lblRegister = new JLabel("🐥 Quackstagram 🐥");
-          lblRegister.setFont(new Font("Arial", Font.BOLD, 16));
-          lblRegister.setForeground(Color.WHITE); // Set the text color to white
-          headerPanel.add(lblRegister);
-          headerPanel.setPreferredSize(new Dimension(WIDTH, 40)); // Give the header a fixed height
-        
-          add(headerPanel, BorderLayout.NORTH);
+        // Header Panel (reuse from InstagramProfileUI or customize for home page)
+        // Header with the Register label
+        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        headerPanel.setBackground(new Color(51, 51, 51)); // Set a darker background for the header
+        JLabel lblRegister = new JLabel("🐥 Quackstagram 🐥");
+        lblRegister.setFont(new Font("Arial", Font.BOLD, 16));
+        lblRegister.setForeground(Color.WHITE); // Set the text color to white
+        headerPanel.add(lblRegister);
+        headerPanel.setPreferredSize(new Dimension(WIDTH, 40)); // Give the header a fixed height
+    
+        add(headerPanel, BorderLayout.NORTH);
 
 
         // Navigation Bar
@@ -96,7 +96,7 @@ public class QuakstagramHomeUI extends JFrame {
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS)); // Vertical box layout
         JScrollPane scrollPane = new JScrollPane(contentPanel);
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER); // Never allow horizontal scrolling
-         String[][] sampleData = createSampleData(); 
+        String[][] sampleData = createSampleData(); 
         populateContentPanel(contentPanel, sampleData);
         add(scrollPane, BorderLayout.CENTER);
 
@@ -117,7 +117,7 @@ public class QuakstagramHomeUI extends JFrame {
 
     private void populateContentPanel(JPanel panel, String[][] sampleData) {
 
-         for (String[] postData : sampleData) {
+        for (String[] postData : sampleData) {
             JPanel itemPanel = new JPanel();
             itemPanel.setLayout(new BoxLayout(itemPanel, BoxLayout.Y_AXIS));
             itemPanel.setBackground(Color.WHITE); // Set the background color for the item panel
@@ -185,117 +185,76 @@ public class QuakstagramHomeUI extends JFrame {
         }
     }
 
-private void handleLikeAction(String imageId, JLabel likesLabel) {
-    Path detailsPath = Paths.get("img", "image_details.txt");
-    StringBuilder newContent = new StringBuilder();
-    boolean updated = false;
-    String currentUser = "";
-    String imageOwner = "";
-    String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+    private void handleLikeAction(String imageId, JLabel likesLabel) {
+        boolean updated = false;
+        String currentUser = "";
+        String imageOwner = "";
 
-    // Retrieve the current user from users.txt
-    try (BufferedReader userReader = Files.newBufferedReader(Paths.get("data", "users.txt"))) {
-        String line = userReader.readLine();
-        if (line != null) {
-            currentUser = line.split(":")[0].trim();
-        }
-    } catch (IOException e) {
-        e.printStackTrace();
-    }
-
-    // Read and update image_details.txt
-    try (BufferedReader reader = Files.newBufferedReader(detailsPath)) {
-        String line;
-        while ((line = reader.readLine()) != null) {
-            if (line.contains("ImageID: " + imageId)) {
-                String[] parts = line.split(", ");
-                imageOwner = parts[1].split(": ")[1];
-                int likes = Integer.parseInt(parts[4].split(": ")[1]);
-                likes++; // Increment the likes count
-                parts[4] = "Likes: " + likes;
-                line = String.join(", ", parts);
-
-                // Update the UI
-                likesLabel.setText("Likes: " + likes);
-                updated = true;
+        // Retrieve the current user from users.txt
+        try (BufferedReader userReader = Files.newBufferedReader(Paths.get("data", "users.txt"))) {
+            String line = userReader.readLine();
+            if (line != null) {
+                currentUser = line.split(":")[0].trim();
             }
-            newContent.append(line).append("\n");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-    } catch (IOException e) {
-        e.printStackTrace();
-    }
+        // Update likes in the database
+        DbManager dbManager = new DbManager();
+        int likes = dbManager.getNumberOfLikes(imageId);
+        likes++; // Increment the likes count
+        likesLabel.setText("Likes: " + likes); // Update the UI
 
-    // Write updated likes back to image_details.txt
+        // Record the like in the database
+        
+        try (BufferedReader userReader = Files.newBufferedReader(Paths.get("data", "users.txt"))) {
+            String line = userReader.readLine();
+            if (line != null) {
+                currentUser = line.split(":")[0].trim();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        dbManager.insertNotification(imageOwner, currentUser + " liked your post (ID: " + imageId + ")");
+
+    // Write updated likes back to image_details.txt to be changed with db
     if (updated) {
-        try (BufferedWriter writer = Files.newBufferedWriter(detailsPath)) {
-            writer.write(newContent.toString());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        dbManager.insertLike(currentUser, imageId);
 
-        // Record the like in notifications.txt
-        String notification = String.format("%s; %s; %s; %s\n", imageOwner, currentUser, imageId, timestamp);
-        try (BufferedWriter notificationWriter = Files.newBufferedWriter(Paths.get("data", "notifications.txt"), StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
-            notificationWriter.write(notification);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        // Record the like in the database notifications
+        dbManager.insertNotification(imageOwner, currentUser + " liked your post (ID: " + imageId + ")");
     }
 }
-
-
     
-private String[][] createSampleData() {
-    String currentUser = "";
-    try (BufferedReader reader = Files.newBufferedReader(Paths.get("data", "users.txt"))) {
-        String line = reader.readLine();
-        if (line != null) {
-            currentUser = line.split(":")[0].trim();
-        }
-    } catch (IOException e) {
-        e.printStackTrace();
-    }
+    private String[][] createSampleData() {
+        DbManager dbManager = new DbManager();
+        String currentUser = "";
 
-    String followedUsers = "";
-    try (BufferedReader reader = Files.newBufferedReader(Paths.get("data", "following.txt"))) {
-        String line;
-        while ((line = reader.readLine()) != null) {
-            if (line.startsWith(currentUser + ":")) {
-                followedUsers = line.split(":")[1].trim();
-                break;
+        // Retrieve the current user from users.txt
+        try (BufferedReader reader = Files.newBufferedReader(Paths.get("data", "users.txt"))) {
+            String line = reader.readLine();
+            if (line != null) {
+                currentUser = line.split(":")[0].trim();
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-    } catch (IOException e) {
-        e.printStackTrace();
-    }
 
-    // Temporary structure to hold the data
-    String[][] tempData = new String[100][]; // Assuming a maximum of 100 posts for simplicity
-    int count = 0;
+        // Retrieve followed users from the database
+        java.util.List<String> followedUsers = dbManager.getFollowedUsers(currentUser);
 
-    try (BufferedReader reader = Files.newBufferedReader(Paths.get("img", "image_details.txt"))) {
-        String line;
-        while ((line = reader.readLine()) != null && count < tempData.length) {
-            String[] details = line.split(", ");
-            String imagePoster = details[1].split(": ")[1];
-            if (followedUsers.contains(imagePoster)) {
-                String imagePath = "img/uploaded/" + details[0].split(": ")[1] + ".png"; // Assuming PNG format
-                String description = details[2].split(": ")[1];
-                String likes = "Likes: " + details[4].split(": ")[1];
+        // Retrieve posts from the database
+        java.util.List<String[]> posts = dbManager.getPostsByUsers(followedUsers);
 
-                tempData[count++] = new String[]{imagePoster, description, likes, imagePath};
-            }
+        // Convert the list to a 2D array
+        String[][] sampleData = new String[posts.size()][];
+        for (int i = 0; i < posts.size(); i++) {
+            sampleData[i] = posts.get(i);
         }
-    } catch (IOException e) {
-        e.printStackTrace();
+
+        return sampleData;
     }
-
-    // Transfer the data to the final array
-    String[][] sampleData = new String[count][];
-    System.arraycopy(tempData, 0, sampleData, 0, count);
-
-    return sampleData;
-}
 
     private JButton createIconButton(String iconPath) {
         ImageIcon iconOriginal = new ImageIcon(iconPath);
@@ -309,7 +268,7 @@ private String[][] createSampleData() {
     private void displayImage(String[] postData) {
         imageViewPanel.removeAll(); // Clear previous content
 
-       
+        // Set up the image view panel
         String imageId = new File(postData[3]).getName().split("\\.")[0];
         JLabel likesLabel = new JLabel(postData[2]); // Update this line
 
@@ -417,18 +376,18 @@ private String[][] createSampleData() {
         String loggedInUsername = "";
  
          // Read the logged-in user's username from users.txt
-     try (BufferedReader reader = Files.newBufferedReader(Paths.get("data", "users.txt"))) {
-         String line = reader.readLine();
-         if (line != null) {
-             loggedInUsername = line.split(":")[0].trim();
-         }
-     } catch (IOException e) {
-         e.printStackTrace();
-     }
-      User user = new User(loggedInUsername);
-        InstagramProfileUI profileUI = new InstagramProfileUI(user);
-        profileUI.setVisible(true);
-    }
+        try (BufferedReader reader = Files.newBufferedReader(Paths.get("data", "users.txt"))) {
+            String line = reader.readLine();
+            if (line != null) {
+                loggedInUsername = line.split(":")[0].trim();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        User user = new User(loggedInUsername);
+            InstagramProfileUI profileUI = new InstagramProfileUI(user);
+            profileUI.setVisible(true);
+        }
  
      private void notificationsUI() {
         // Open InstagramProfileUI frame
