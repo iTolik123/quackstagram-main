@@ -69,13 +69,71 @@ public class ExploreUI extends JFrame {
 
         
     }
+    private void addSearchFunctionality(JTextField searchField, JPanel imageGridPanel) {
+        searchField.addActionListener(e -> {
+            String query = searchField.getText().trim().toLowerCase();
+            if (query.isEmpty() || query.equals("search users")) {
+                return; // Do nothing if the search field is empty or contains the placeholder text
+            }
+
+            imageGridPanel.removeAll(); // Clear the grid panel
+
+            DbManager dbConnection = new DbManager();
+            try {
+                // Search for users in the database
+                java.util.List<User> users = dbConnection.searchUsers(query);
+
+                // Display search results
+                for (User user : users) {
+                    JLabel userLabel = new JLabel(user.getUsername());
+                    userLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+                    userLabel.setForeground(Color.BLUE);
+                    userLabel.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            InstagramProfileUI profileUI = new InstagramProfileUI(user);
+                            profileUI.setVisible(true);
+                            dispose(); // Close the current frame
+                        }
+                    });
+                    imageGridPanel.add(userLabel);
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+
+            imageGridPanel.revalidate();
+            imageGridPanel.repaint();
+        });
+    }
+
     private JPanel createMainContentPanel() {
         JPanel searchPanel = new JPanel(new BorderLayout());
         JTextField searchField = new JTextField(" Search Users");
+        searchField.setForeground(Color.GRAY);
+        searchField.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
+                if (searchField.getText().equals(" Search Users")) {
+                    searchField.setText("");
+                    searchField.setForeground(Color.BLACK);
+                }
+            }
+
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
+                if (searchField.getText().isEmpty()) {
+                    searchField.setText(" Search Users");
+                    searchField.setForeground(Color.GRAY);
+                }
+            }
+        });
         searchPanel.add(searchField, BorderLayout.CENTER);
-        searchPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, searchField.getPreferredSize().height)); 
+        searchPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, searchField.getPreferredSize().height));
+
         JPanel imageGridPanel = new JPanel(new GridLayout(0, 3, 2, 2)); // 3 columns, auto rows
 
+        addSearchFunctionality(searchField, imageGridPanel);
         // Load images from the database and save them to the directory
         DbManager dbConnection = new DbManager();
         String path = "quackstagram_db-main/quackstagram_db/src/data/img";

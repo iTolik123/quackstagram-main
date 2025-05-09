@@ -455,6 +455,29 @@ public class DbManager {
         return outputPath;
     }
 
+
+    public java.util.List<User> searchUsers(String query) {
+        java.util.List<User> users = new java.util.ArrayList<>();
+        String sqlQuery = "SELECT name, bio FROM User WHERE LOWER(name) LIKE ?";
+
+        try (Connection connection = DriverManager.getConnection(this.dbUrl, this.dbUsername, this.password);
+             PreparedStatement stmnt = connection.prepareStatement(sqlQuery)) {
+
+            stmnt.setString(1, "%" + query + "%");
+            try (ResultSet rs = stmnt.executeQuery()) {
+                while (rs.next()) {
+                    String username = rs.getString("name");
+                    String bio = rs.getString("bio");
+                    users.add(new User(username, bio, null)); // Assuming password is not needed here
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return users;
+    }
+
     public java.util.List<String> getUserImages(String username) {
         java.util.List<String> imagePaths = new java.util.ArrayList<>();
         String query = "SELECT Post.postName, Post.image FROM Post " +
