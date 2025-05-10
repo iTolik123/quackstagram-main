@@ -74,15 +74,15 @@ public class QuakstagramHomeUI extends JFrame {
         navigationPanel.setLayout(new BoxLayout(navigationPanel, BoxLayout.X_AXIS));
         navigationPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        navigationPanel.add(createIconButton("img/icons/home.png", "home"));
+        navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/img/icons/home.png", "home"));
         navigationPanel.add(Box.createHorizontalGlue());
-        navigationPanel.add(createIconButton("img/icons/search.png","explore"));
+        navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/img/icons/search.png","explore"));
         navigationPanel.add(Box.createHorizontalGlue());
-        navigationPanel.add(createIconButton("img/icons/add.png","add"));
+        navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/img/icons/add.png","add"));
         navigationPanel.add(Box.createHorizontalGlue());
-        navigationPanel.add(createIconButton("img/icons/heart.png","notification"));
+        navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/img/icons/heart.png","notification"));
         navigationPanel.add(Box.createHorizontalGlue());
-        navigationPanel.add(createIconButton("img/icons/profile.png", "profile"));
+        navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/img/icons/profile.png", "profile"));
 
 
         add(navigationPanel, BorderLayout.SOUTH);
@@ -191,7 +191,7 @@ public class QuakstagramHomeUI extends JFrame {
         String imageOwner = "";
 
         // Retrieve the current user from users.txt
-        try (BufferedReader userReader = Files.newBufferedReader(Paths.get("data", "users.txt"))) {
+        try (BufferedReader userReader = Files.newBufferedReader(Paths.get("quackstagram_db-main/quackstagram_db/src/data", "users.txt"))) {
             String line = userReader.readLine();
             if (line != null) {
                 currentUser = line.split(":")[0].trim();
@@ -207,7 +207,7 @@ public class QuakstagramHomeUI extends JFrame {
 
         // Record the like in the database
         
-        try (BufferedReader userReader = Files.newBufferedReader(Paths.get("data", "users.txt"))) {
+        try (BufferedReader userReader = Files.newBufferedReader(Paths.get("quackstagram_db-main/quackstagram_db/src/data", "users.txt"))) {
             String line = userReader.readLine();
             if (line != null) {
                 currentUser = line.split(":")[0].trim();
@@ -232,7 +232,7 @@ public class QuakstagramHomeUI extends JFrame {
         String currentUser = "";
 
         // Retrieve the current user from users.txt
-        try (BufferedReader reader = Files.newBufferedReader(Paths.get("data", "users.txt"))) {
+        try (BufferedReader reader = Files.newBufferedReader(Paths.get("quackstagram_db-main/quackstagram_db/src/data", "users.txt"))) {
             String line = reader.readLine();
             if (line != null) {
                 currentUser = line.split(":")[0].trim();
@@ -329,7 +329,7 @@ public class QuakstagramHomeUI extends JFrame {
 
     private void refreshDisplayImage(String[] postData, String imageId) {
         // Read updated likes count from image_details.txt
-        try (BufferedReader reader = Files.newBufferedReader(Paths.get("img", "image_details.txt"))) {
+        try (BufferedReader reader = Files.newBufferedReader(Paths.get("quackstagram_db-main/quackstagram_db/src/img", "image_details.txt"))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.contains("ImageID: " + imageId)) {

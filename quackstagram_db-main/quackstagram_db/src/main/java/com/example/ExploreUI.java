@@ -207,15 +207,15 @@ public class ExploreUI extends JFrame {
         navigationPanel.setLayout(new BoxLayout(navigationPanel, BoxLayout.X_AXIS));
         navigationPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/data/img/icons/home.png", "home"));
+        navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/img/icons/home.png", "home"));
         navigationPanel.add(Box.createHorizontalGlue());
-        navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/data/img/icons/search.png","explore"));
+        navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/img/icons/search.png","explore"));
         navigationPanel.add(Box.createHorizontalGlue());
-        navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/data/img/icons/add.png","add"));
+        navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/img/icons/add.png","add"));
         navigationPanel.add(Box.createHorizontalGlue());
-        navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/data/img/icons/heart.png","notification"));
+        navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/img/icons/heart.png","notification"));
         navigationPanel.add(Box.createHorizontalGlue());
-        navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/data/img/icons/profile.png", "profile"));
+        navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/img/icons/profile.png", "profile"));
 
 
         return navigationPanel;
@@ -239,7 +239,7 @@ public class ExploreUI extends JFrame {
     String bio = "";
     String timestampString = "";
     int likes = 0;
-    Path detailsPath = Paths.get("quackstagram_db-main/quackstagram_db/src/data/img", "quackstagram_db-main/quackstagram_db/src/data/image_details.txt");
+    Path detailsPath = Paths.get("quackstagram_db-main/quackstagram_db/src/data/img", "image_details.txt");
     try (Stream<String> lines = Files.lines(detailsPath)) {
         String details = lines.filter(line -> line.contains("ImageID: " + imageId)).findFirst().orElse("");
         if (!details.isEmpty()) {
@@ -381,7 +381,7 @@ private void ImageUploadUI() {
        String loggedInUsername = "";
 
         // Read the logged-in user's username from users.txt
-    try (BufferedReader reader = Files.newBufferedReader(Paths.get("quackstagram_db-main/quackstagram_db/src/data", "quackstagram_db-main/quackstagram_db/src/data/users.txt"))) {
+    try (BufferedReader reader = Files.newBufferedReader(Paths.get("quackstagram_db-main/quackstagram_db/src/data", "users.txt"))) {
         String line = reader.readLine();
         if (line != null) {
             loggedInUsername = line.split(":")[0].trim();
