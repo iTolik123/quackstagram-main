@@ -283,6 +283,8 @@ topPanel.add(timeLabel, BorderLayout.EAST);
     } catch (IOException ex) {
         imageLabel.setText("Image not found");
     }
+    //comment button
+    JButton commentButton = new JButton("Comment");
 
     // Bottom panel for bio and likes
     JPanel bottomPanel = new JPanel(new BorderLayout());
@@ -291,6 +293,7 @@ topPanel.add(timeLabel, BorderLayout.EAST);
     JLabel likesLabel = new JLabel("Likes: " + likes);
     bottomPanel.add(bioTextArea, BorderLayout.CENTER);
     bottomPanel.add(likesLabel, BorderLayout.SOUTH);
+    bottomPanel.add(commentButton , BorderLayout.SOUTH);
 
     // Adding the components to the frame
     add(topPanel, BorderLayout.NORTH);
