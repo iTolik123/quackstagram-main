@@ -161,7 +161,7 @@ public class DbManager {
             e.printStackTrace();
         }
 
-        String query = "INSERT INTO Comment(username, post_id, comment) VALUES (?, ?, ?)";
+        String query = "INSERT INTO comment(username, post_id, comment) VALUES (?, ?, ?)";
         try (Connection connection = DriverManager.getConnection(this.dbUrl, this.dbUsername, this.password)) {
             PreparedStatement stmnt = connection.prepareStatement(query);
             stmnt.setString(1, username);
@@ -210,7 +210,7 @@ public class DbManager {
             throw new IllegalArgumentException("Follower or followed user does not exist.");
         }
 
-        String checkQuery = "SELECT COUNT(*) AS count FROM Follower WHERE follower_id = ? AND followed_id = ?";
+        String checkQuery = "SELECT COUNT(*) AS count FROM UserFollows WHERE follower_id = ? AND followed_id = ?";
         boolean exists = false;
 
         try (Connection connection = DriverManager.getConnection(this.dbUrl, this.dbUsername, this.password)) {
@@ -260,8 +260,8 @@ public class DbManager {
         return userId;
     }
     public int getNumberOfFollowers(String username) {
-        String query = "SELECT COUNT(*) AS follower_count FROM userfollows " +
-                       "INNER JOIN User ON userfollows.followed_id = User.id " +
+        String query = "SELECT COUNT(*) AS follower_count FROM UserFollows " +
+                       "INNER JOIN User ON UserFollows.followed_id = User.id " +
                        "WHERE User.name = ?";
         int followerCount = 0;
 
@@ -403,9 +403,9 @@ public class DbManager {
     }
     
     public boolean isFollowing(String follower, String followed) {
-        String query = "SELECT COUNT(*) AS is_following FROM Follower " +
-                       "INNER JOIN User AS FollowerUser ON Follower.follower_id = FollowerUser.id " +
-                       "INNER JOIN User AS FollowedUser ON Follower.followed_id = FollowedUser.id " +
+        String query = "SELECT COUNT(*) AS is_following FROM UserFollows " +
+                       "INNER JOIN User AS FollowerUser ON UserFollows.follower_id = FollowerUser.id " +
+                       "INNER JOIN User AS FollowedUser ON UserFollows.followed_id = FollowedUser.id " +
                        "WHERE FollowerUser.name = ? AND FollowedUser.name = ?";
         boolean isFollowing = false;
 
@@ -663,9 +663,9 @@ public class DbManager {
 
     public java.util.List<String> getFollowedUsers(String username) {
         java.util.List<String> followedUsers = new java.util.ArrayList<>();
-        String query = "SELECT FollowedUser.name FROM Follower " +
-                       "INNER JOIN User AS FollowerUser ON Follower.follower_id = FollowerUser.id " +
-                       "INNER JOIN User AS FollowedUser ON Follower.followed_id = FollowedUser.id " +
+        String query = "SELECT FollowedUser.name FROM UserFollows " +
+                       "INNER JOIN User AS FollowerUser ON UserFollows.follower_id = FollowerUser.id " +
+                       "INNER JOIN User AS FollowedUser ON UserFollows.followed_id = FollowedUser.id " +
                        "WHERE FollowerUser.name = ?";
 
         try (Connection connection = DriverManager.getConnection(this.dbUrl, this.dbUsername, this.password);
@@ -686,7 +686,7 @@ public class DbManager {
     
     public java.util.List<String[]> getPostsByUsers(java.util.List<String> followedUsers) {
         java.util.List<String[]> posts = new java.util.ArrayList<>();
-        String query = "SELECT Post.postName, Post.content, User.name AS author " +
+        String query = "SELECT Post.postName, Post.image, User.name AS author " +
                        "FROM Post " +
                        "INNER JOIN User ON Post.user_id = User.id " +
                        "WHERE User.name = ?";
@@ -698,7 +698,7 @@ public class DbManager {
                     try (ResultSet rs = stmnt.executeQuery()) {
                         while (rs.next()) {
                             String postName = rs.getString("postName");
-                            String content = rs.getString("content");
+                            String content = rs.getString("image");
                             String author = rs.getString("author");
                             posts.add(new String[]{postName, content, author});
                         }

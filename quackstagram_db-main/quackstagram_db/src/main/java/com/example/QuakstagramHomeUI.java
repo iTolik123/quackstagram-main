@@ -376,7 +376,7 @@ public class QuakstagramHomeUI extends JFrame {
         String loggedInUsername = "";
  
          // Read the logged-in user's username from users.txt
-        try (BufferedReader reader = Files.newBufferedReader(Paths.get("data", "users.txt"))) {
+        try (BufferedReader reader = Files.newBufferedReader(Paths.get("quackstagram_db-main/quackstagram_db/src/data", "users.txt"))) {
             String line = reader.readLine();
             if (line != null) {
                 loggedInUsername = line.split(":")[0].trim();

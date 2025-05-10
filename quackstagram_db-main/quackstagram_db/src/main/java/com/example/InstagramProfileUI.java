@@ -41,6 +41,7 @@ public class InstagramProfileUI extends JFrame {
     private JPanel headerPanel;   // Panel for the header
     private JPanel navigationPanel; // Panel for the navigation
     private User currentUser; // User object to store the current user's information
+    private String loggedInUsername;
 
     public InstagramProfileUI(User user) {
         this.currentUser = user;
@@ -111,7 +112,6 @@ public class InstagramProfileUI extends JFrame {
     private JPanel createHeaderPanel() {
         DbManager db = new DbManager();
         boolean isCurrentUser = false;
-        String loggedInUsername = "";
 
         try (BufferedReader reader = Files.newBufferedReader(Paths.get("quackstagram_db-main/quackstagram_db/src/data", "users.txt"))) {
             String line = reader.readLine();
@@ -172,8 +172,8 @@ JButton followButton;
             followButton.setText("Following");
         }
         followButton.addActionListener(e -> {
-            
             followButton.setText("Following");
+            dbManager.insertFollower(loggedInUsername, currentUser.getUsername());
         });
     }
     
@@ -243,7 +243,7 @@ headerPanel.add(profileNameAndBioPanel);
         navigationPanel.add(Box.createHorizontalGlue());
         navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/img/icons/heart.png","notification"));
         navigationPanel.add(Box.createHorizontalGlue());
-        navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/mg/icons/profile.png", "profile"));
+        navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/img/icons/profile.png", "profile"));
 
         return navigationPanel;
 
