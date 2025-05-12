@@ -126,7 +126,7 @@ public class DbManager {
 
     public boolean insertUser(String username, String password, String bio, String imagePath) {
         String query = "INSERT INTO User(name, password, bio , profile_image) VALUES (?, ?, ? ,?)";
-
+        System.out.println("---->" + imagePath);
         try (Connection connection = DriverManager.getConnection(this.dbUrl, this.dbUsername, this.password);
             FileInputStream fis = new FileInputStream(imagePath);) {
             PreparedStatement stmnt = connection.prepareStatement(query);

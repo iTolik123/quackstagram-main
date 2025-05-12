@@ -163,15 +163,8 @@ public class SignUpUI extends JFrame {
         }
     }
     private String saveProfilePicture(File file, String username) {
-        try {
-            BufferedImage image = ImageIO.read(file);
-            File outputFile = new File(profilePhotoStoragePath + username + ".png");
-            ImageIO.write(image, "png", outputFile);
-            return outputFile.getAbsolutePath();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
+        
+        return file.getAbsolutePath();
     }
     
     private void saveCredentials(String username, String password, String bio) {
