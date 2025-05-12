@@ -284,25 +284,16 @@ topPanel.add(timeLabel, BorderLayout.EAST);
         imageLabel.setText("Image not found");
     }
     //comment button
-    JButton commentButton = new JButton("Comment");
-    commentButton.addMouseListener(new MouseAdapter() {
-        @Override
-        public void mouseClicked(MouseEvent e){
-            openComments();
-        }
-    });
 
-    JPanel commentandlike = new JPanel();
-    commentandlike.add(commentButton);
+
 
     // Bottom panel for bio and likes
     JPanel bottomPanel = new JPanel(new BorderLayout());
     JTextArea bioTextArea = new JTextArea(bio);
     bioTextArea.setEditable(false);
     JLabel likesLabel = new JLabel("Likes: " + likes);
-    commentandlike.add(likesLabel);
     bottomPanel.add(bioTextArea, BorderLayout.CENTER);
-    bottomPanel.add(commentandlike, BorderLayout.SOUTH);
+    bottomPanel.add(likesLabel, BorderLayout.SOUTH);
 
     // Adding the components to the frame
     add(topPanel, BorderLayout.NORTH);
@@ -354,10 +345,7 @@ topPanel.add(timeLabel, BorderLayout.EAST);
  repaint();
 }
 
-private void openComments(){
-    getContentPane().removeAll();
-    setLayout(new BorderLayout());
-}
+
 
 
 private JButton createIconButton(String iconPath, String buttonType) {

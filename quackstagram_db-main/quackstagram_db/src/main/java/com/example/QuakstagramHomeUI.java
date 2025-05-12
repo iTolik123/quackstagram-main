@@ -5,7 +5,7 @@ import javax.swing.*;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
+import java.util.Base64;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,8 +13,11 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -131,9 +134,14 @@ public class QuakstagramHomeUI extends JFrame {
             imageLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
             imageLabel.setPreferredSize(new Dimension(IMAGE_WIDTH, IMAGE_HEIGHT));
             imageLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK)); // Add border to image label
-            String imageId = new File(postData[3]).getName().split("\\.")[0];
+            String imageId = new File(postData[0]).getName();
             try {
-                BufferedImage originalImage = ImageIO.read(new File(postData[3]));
+                                
+                byte[] imageBytes = Base64.getDecoder().decode(postData[1]);
+                InputStream is = new ByteArrayInputStream(imageBytes);
+                BufferedImage originalImage = ImageIO.read(is);
+
+
                 BufferedImage croppedImage = originalImage.getSubimage(0, 0, Math.min(originalImage.getWidth(), IMAGE_WIDTH), Math.min(originalImage.getHeight(), IMAGE_HEIGHT));
                 ImageIcon imageIcon = new ImageIcon(croppedImage);
                 imageLabel.setIcon(imageIcon);
@@ -142,10 +150,11 @@ public class QuakstagramHomeUI extends JFrame {
                 imageLabel.setText("Image not found");
             }
 
-            JLabel descriptionLabel = new JLabel(postData[1]);
+            JLabel descriptionLabel = new JLabel(postData[3]);
             descriptionLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-            JLabel likesLabel = new JLabel(postData[2]);
+            DbManager dbManager = new DbManager();
+            JLabel likesLabel = new JLabel(String.valueOf(dbManager.getNumberOfLikes(postData[4])));
             likesLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
             JButton likeButton = new JButton("❤");
@@ -185,10 +194,11 @@ public class QuakstagramHomeUI extends JFrame {
         }
     }
 
-    private void handleLikeAction(String imageId, JLabel likesLabel) {
-        boolean updated = false;
+    private void handleLikeAction(String imageName, JLabel likesLabel) {
         String currentUser = "";
-        String imageOwner = "";
+
+
+
 
         // Retrieve the current user from users.txt
         try (BufferedReader userReader = Files.newBufferedReader(Paths.get("quackstagram_db-main/quackstagram_db/src/data", "users.txt"))) {
@@ -201,12 +211,10 @@ public class QuakstagramHomeUI extends JFrame {
         }
         // Update likes in the database
         DbManager dbManager = new DbManager();
-        int likes = dbManager.getNumberOfLikes(imageId);
-        likes++; // Increment the likes count
+        int likes = dbManager.getNumberOfLikes(imageName);
         likesLabel.setText("Likes: " + likes); // Update the UI
 
-        // Record the like in the database
-        
+        // Record the like in the database 
         try (BufferedReader userReader = Files.newBufferedReader(Paths.get("quackstagram_db-main/quackstagram_db/src/data", "users.txt"))) {
             String line = userReader.readLine();
             if (line != null) {
@@ -215,16 +223,12 @@ public class QuakstagramHomeUI extends JFrame {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        if(dbManager.insertLike(currentUser, imageName)){
 
-        dbManager.insertNotification(imageOwner, currentUser + " liked your post (ID: " + imageId + ")");
+            dbManager.insertNotification(currentUser, "like", dbManager.getPostId(imageName));
 
-    // Write updated likes back to image_details.txt to be changed with db
-    if (updated) {
-        dbManager.insertLike(currentUser, imageId);
-
-        // Record the like in the database notifications
-        dbManager.insertNotification(imageOwner, currentUser + " liked your post (ID: " + imageId + ")");
-    }
+        }
+        
 }
     
     private String[][] createSampleData() {

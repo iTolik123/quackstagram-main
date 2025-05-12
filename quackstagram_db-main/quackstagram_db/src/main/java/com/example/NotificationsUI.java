@@ -51,7 +51,7 @@ public class NotificationsUI extends JFrame {
 
         // Read the current username from users.txt
         String currentUsername = "";
-        try (BufferedReader reader = Files.newBufferedReader(Paths.get("data", "users.txt"))) {
+        try (BufferedReader reader = Files.newBufferedReader(Paths.get("quackstagram_db-main/quackstagram_db/src/data", "users.txt"))) {
             String line = reader.readLine();
             if (line != null) {
                 currentUsername = line.split(":")[0].trim();
@@ -59,7 +59,7 @@ public class NotificationsUI extends JFrame {
         } catch (IOException e) {
             e.printStackTrace();
         }
-       
+        
     java.util.List<String> notifications = dbManager.getUserNotifications(currentUsername);
     for (String notificationMessage : notifications) {
         // Add the notification to the panel
@@ -144,19 +144,19 @@ public class NotificationsUI extends JFrame {
     }
 
 
- private void openProfileUI() {
+    private void openProfileUI() {
        // Open InstagramProfileUI frame
-       this.dispose();
-       String loggedInUsername = "";
+        this.dispose();
+        String loggedInUsername = "";
 
         // Read the logged-in user's username from users.txt
-    try (BufferedReader reader = Files.newBufferedReader(Paths.get("quackstagram_db-main/quackstagram_db/src/data", "quackstagram_db-main/quackstagram_db/src/data/users.txt"))) {
+        try (BufferedReader reader = Files.newBufferedReader(Paths.get("quackstagram_db-main/quackstagram_db/src/data", "users.txt"))) {
         String line = reader.readLine();
-        if (line != null) {
-            loggedInUsername = line.split(":")[0].trim();
-        }
-    } catch (IOException e) {
-        e.printStackTrace();
+            if (line != null) {
+                loggedInUsername = line.split(":")[0].trim();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
     }
      User user = new User(loggedInUsername);
        InstagramProfileUI profileUI = new InstagramProfileUI(user);

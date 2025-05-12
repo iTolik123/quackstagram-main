@@ -253,15 +253,15 @@ public class ImageUploadUI extends JFrame {
         navigationPanel.setLayout(new BoxLayout(navigationPanel, BoxLayout.X_AXIS));
         navigationPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        navigationPanel.add(createIconButton("img/icons/home.png", "home"));
+        navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/img/icons/home.png", "home"));
         navigationPanel.add(Box.createHorizontalGlue());
-        navigationPanel.add(createIconButton("img/icons/search.png","explore"));
+        navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/img/icons/search.png","explore"));
         navigationPanel.add(Box.createHorizontalGlue());
-        navigationPanel.add(createIconButton("img/icons/add.png"," "));
+        navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/img/icons/add.png"," "));
         navigationPanel.add(Box.createHorizontalGlue());
-        navigationPanel.add(createIconButton("img/icons/heart.png","notification"));
+        navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/img/icons/heart.png","notification"));
         navigationPanel.add(Box.createHorizontalGlue());
-        navigationPanel.add(createIconButton("img/icons/profile.png", "profile"));
+        navigationPanel.add(createIconButton("quackstagram_db-main/quackstagram_db/src/img/icons/profile.png", "profile"));
 
         return navigationPanel;
    }
@@ -295,7 +295,7 @@ public class ImageUploadUI extends JFrame {
         String loggedInUsername = "";
  
          // Read the logged-in user's username from users.txt
-     try (BufferedReader reader = Files.newBufferedReader(Paths.get("data", "users.txt"))) {
+     try (BufferedReader reader = Files.newBufferedReader(Paths.get("quackstagram_db-main/quackstagram_db/src/data", "users.txt"))) {
          String line = reader.readLine();
          if (line != null) {
              loggedInUsername = line.split(":")[0].trim();

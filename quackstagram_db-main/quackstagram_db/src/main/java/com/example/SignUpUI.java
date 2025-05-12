@@ -1,12 +1,28 @@
 package com.example;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+
 import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class SignUpUI extends JFrame {
@@ -98,10 +114,6 @@ public class SignUpUI extends JFrame {
         registerPanel.setBackground(Color.WHITE); // Background for the panel
         registerPanel.add(btnRegister, BorderLayout.CENTER);
 
-      
-
-       
-
         // Adding components to the frame
         add(headerPanel, BorderLayout.NORTH);
         add(fieldsPanel, BorderLayout.CENTER);
@@ -125,12 +137,8 @@ public class SignUpUI extends JFrame {
         if (doesUsernameExist(username)) {
             JOptionPane.showMessageDialog(this, "Username already exists. Please choose a different username.", "Error", JOptionPane.ERROR_MESSAGE);
         } else {
-            String profileImagePath = null;
-            if (lblPhoto.getIcon() != null) {
-                profileImagePath = saveProfilePicture(new File(profilePhotoStoragePath + username + ".png"), username);
-            }
 
-            saveCredentials(username, password, bio, profileImagePath);
+            saveCredentials(username, password, bio, handleProfilePictureUpload());
             dispose();
 
             // Open the SignInUI frame
@@ -153,18 +161,15 @@ public class SignUpUI extends JFrame {
     }
 
      // Method to handle profile picture upload
-    private void handleProfilePictureUpload() {
+    private String handleProfilePictureUpload() {
         JFileChooser fileChooser = new JFileChooser();
         FileNameExtensionFilter filter = new FileNameExtensionFilter("Image files", ImageIO.getReaderFileSuffixes());
         fileChooser.setFileFilter(filter);
         if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
-            saveProfilePicture(selectedFile, txtUsername.getText());
+            return selectedFile.getAbsolutePath();
         }
-    }
-    private String saveProfilePicture(File file, String username) {
-        
-        return file.getAbsolutePath();
+        return null; // Return null if no file was selected
     }
     
     private void saveCredentials(String username, String password, String bio) {

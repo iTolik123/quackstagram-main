@@ -18,13 +18,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Base64;
 import java.util.stream.Collectors;
 
 public class DbManager {
 
     private final String dbUrl = "jdbc:mysql://localhost:3306/quackstagram";
     private final String dbUsername = "root";
-    private final String password = "";
+    private final String password = "password";
 
     public DbManager() {
         try (Connection connection = DriverManager.getConnection(dbUrl, dbUsername, password)) {
@@ -100,6 +101,7 @@ public class DbManager {
         return check_username.equals(username);
     }
 
+    //tobe reworked
     private void saveUserInformation(User user) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("quackstagram_db-main/quackstagram_db/src/data/users.txt", false))) {
             writer.write(user.toString());
@@ -281,12 +283,13 @@ public class DbManager {
         return followerCount;
     }
     
+
     public void saveImage(String imagePath, String imageName, int userId, String bio) {
         String query = "INSERT INTO Post (postName, user_id, bio, image) VALUES (?, ?, ?, ?)";
 
         try (Connection conn = DriverManager.getConnection(dbUrl, dbUsername, password);
-             PreparedStatement stmnt = conn.prepareStatement(query);
-             FileInputStream fis = new FileInputStream(imagePath)) {
+            PreparedStatement stmnt = conn.prepareStatement(query);
+            FileInputStream fis = new FileInputStream(imagePath)) {
 
             stmnt.setString(1, imageName);
             stmnt.setInt(2, userId);
@@ -512,41 +515,47 @@ public class DbManager {
     }
 
     public java.util.List<String> getUserNotifications(String username) {
-        java.util.List<String> notifications = new java.util.ArrayList<>();
-        String query = "SELECT User.name AS userWhoLiked, Notification.post_id, Notification.dateTime, Notification.type " +
-                       "FROM Notification " +
-                       "INNER JOIN User ON Notification.user_id = User.id " +
-                       "WHERE User.name = ?";
+    java.util.List<String> notifications = new java.util.ArrayList<>();
 
-        try (Connection connection = DriverManager.getConnection(this.dbUrl, this.dbUsername, this.password);
-             PreparedStatement stmnt = connection.prepareStatement(query)) {
+    String query = "SELECT actor.name AS userWhoTriggered, Notification.post_id, Notification.dateTime, Notification.type " +
+               "FROM Notification " +
+               "INNER JOIN Post ON Notification.post_id = Post.id " +
+               "INNER JOIN User AS owner ON Post.user_id = owner.id " +
+               "INNER JOIN User AS actor ON Notification.user_id = actor.id " +
+               "WHERE owner.name = ?";
 
-            stmnt.setString(1, username);
-            try (ResultSet rs = stmnt.executeQuery()) {
-                while (rs.next()) {
-                    String userWhoLiked = rs.getString("userWhoLiked");
-                    String postId = rs.getString("post_id");
-                    String timestamp = rs.getString("dateTime");
-                    String type = rs.getString("type");
 
-                    String notificationMessage;
-                    if ("like".equals(type)) {
-                        notificationMessage = userWhoLiked + " liked your post (ID: " + postId + ") - " + getElapsedTime(timestamp) + " ago";
-                    } else if ("comment".equals(type)) {
-                        notificationMessage = userWhoLiked + " commented on your post (ID: " + postId + ") - " + getElapsedTime(timestamp) + " ago";
-                    } else {
-                        notificationMessage = "Unknown notification type.";
-                    }
+    try (Connection connection = DriverManager.getConnection(this.dbUrl, this.dbUsername, this.password);
+         PreparedStatement stmnt = connection.prepareStatement(query)) {
 
-                    notifications.add(notificationMessage);
+        stmnt.setString(1, username);
+
+        try (ResultSet rs = stmnt.executeQuery()) {
+            while (rs.next()) {
+                String userWhoTriggered = rs.getString("userWhoTriggered");
+                int postId = rs.getInt("post_id");
+                String timestamp = rs.getString("dateTime");
+                String type = rs.getString("type");
+
+                String notificationMessage;
+                if ("like".equals(type)) {
+                    notificationMessage = userWhoTriggered + " liked your post (ID: " + postId + ") - " + getElapsedTime(timestamp) + " ago";
+                } else if ("comment".equals(type)) {
+                    notificationMessage = userWhoTriggered + " commented on your post (ID: " + postId + ") - " + getElapsedTime(timestamp) + " ago";
+                } else {
+                    notificationMessage = "Unknown notification type.";
                 }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
 
-        return notifications;
+                notifications.add(notificationMessage);
+            }
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
     }
+
+    return notifications;
+}
+
 
     private String getElapsedTime(String timestamp) {
         // Implement logic to calculate elapsed time from the timestamp to now
@@ -567,9 +576,9 @@ public class DbManager {
         }
     }
     
-    public void insertNotification(String username, String message) {
+    public void insertNotification(String username, String message,int postId) {
         String userIdQuery = "SELECT id FROM User WHERE name = ?";
-        String insertQuery = "INSERT INTO Notifications(user_id, message) VALUES (?, ?)";
+        String insertQuery = "INSERT INTO Notification(post_id,user_id,dateTime, type) VALUES (?,?,?, ?)";
         String userId = null;
 
         try (Connection connection = DriverManager.getConnection(this.dbUrl, this.dbUsername, this.password)) {
@@ -589,8 +598,10 @@ public class DbManager {
 
             // Insert notification
             try (PreparedStatement insertStmnt = connection.prepareStatement(insertQuery)) {
-                insertStmnt.setString(1, userId);
-                insertStmnt.setString(2, message);
+                insertStmnt.setInt(1, postId);
+                insertStmnt.setString(2, userId);
+                insertStmnt.setTimestamp(3, new java.sql.Timestamp(System.currentTimeMillis()));
+                insertStmnt.setString(4, message);
                 insertStmnt.executeUpdate();
             }
         } catch (SQLException e) {
@@ -599,7 +610,10 @@ public class DbManager {
     }
 
     public int getNumberOfLikes(String postId) {
-        String query = "SELECT COUNT(*) AS like_count FROM Likes JOIN Post ON Likes.post_id = Post.id WHERE Post.postName = ?";
+        String query = "SELECT COUNT(*) AS like_count " +
+                    "FROM `like` " +
+                    "JOIN Post ON `like`.post_id = Post.id " +
+                    "WHERE Post.id = ?";
         int likeCount = 0;
 
         try (Connection connection = DriverManager.getConnection(this.dbUrl, this.dbUsername, this.password);
@@ -618,12 +632,14 @@ public class DbManager {
         return likeCount;
     }
 
-    public void insertLike(String username, String postId) {
+    public boolean insertLike(String username, String postId) {
         String userIdQuery = "SELECT id FROM User WHERE name = ?";
         String postIdQuery = "SELECT id FROM Post WHERE postName = ?";
-        String insertQuery = "INSERT INTO Likes(user_id, post_id) VALUES (?, ?)";
+        String checkLikeQuery = "SELECT COUNT(*) AS like_count FROM `like` WHERE user_id = ? AND post_id = ?";
+        String insertQuery = "INSERT INTO `like`(user_id, post_id) VALUES (?, ?)";
         String userId = null;
         String postDbId = null;
+        boolean likeExists = false;
 
         try (Connection connection = DriverManager.getConnection(this.dbUrl, this.dbUsername, this.password)) {
             // Get user ID
@@ -650,15 +666,29 @@ public class DbManager {
                 throw new IllegalArgumentException("User or post does not exist.");
             }
 
-            // Insert like
-            try (PreparedStatement insertStmnt = connection.prepareStatement(insertQuery)) {
-                insertStmnt.setString(1, userId);
-                insertStmnt.setString(2, postDbId);
-                insertStmnt.executeUpdate();
+            // Check if like already exists
+            try (PreparedStatement checkLikeStmnt = connection.prepareStatement(checkLikeQuery)) {
+                checkLikeStmnt.setString(1, userId);
+                checkLikeStmnt.setString(2, postDbId);
+                try (ResultSet rs = checkLikeStmnt.executeQuery()) {
+                    if (rs.next()) {
+                        likeExists = rs.getInt("like_count") > 0;
+                    }
+                }
+            }
+
+            // Insert like if it doesn't exist
+            if (!likeExists) {
+                try (PreparedStatement insertStmnt = connection.prepareStatement(insertQuery)) {
+                    insertStmnt.setString(1, userId);
+                    insertStmnt.setString(2, postDbId);
+                    insertStmnt.executeUpdate();
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return !likeExists;
     }
 
     public java.util.List<String> getFollowedUsers(String username) {
@@ -686,10 +716,11 @@ public class DbManager {
     
     public java.util.List<String[]> getPostsByUsers(java.util.List<String> followedUsers) {
         java.util.List<String[]> posts = new java.util.ArrayList<>();
-        String query = "SELECT Post.postName, Post.image, User.name AS author " +
-                       "FROM Post " +
-                       "INNER JOIN User ON Post.user_id = User.id " +
-                       "WHERE User.name = ?";
+        String query = "SELECT Post.postName, Post.image, User.name AS author, Post.bio, Post.id " +  
+               "FROM Post " +
+               "INNER JOIN User ON Post.user_id = User.id " +
+               "WHERE User.name = ?";
+
 
         try (Connection connection = DriverManager.getConnection(this.dbUrl, this.dbUsername, this.password)) {
             for (String followedUser : followedUsers) {
@@ -698,10 +729,14 @@ public class DbManager {
                     try (ResultSet rs = stmnt.executeQuery()) {
                         while (rs.next()) {
                             String postName = rs.getString("postName");
-                            String content = rs.getString("image");
+                            byte[] content = rs.getBytes("image"); // 👈 CORRETTO
                             String author = rs.getString("author");
-                            posts.add(new String[]{postName, content, author});
+                            String bio = rs.getString("bio");
+                            String id = rs.getString("id");
+                            // Invece di usare String[], meglio usare una classe Post con byte[]
+                            posts.add(new String[]{postName, Base64.getEncoder().encodeToString(content), author, bio, id});
                         }
+
                     }
                 }
             }
@@ -712,5 +747,43 @@ public class DbManager {
         return posts;
     }
 
+    public String getImageOwner(String postId) {
+        String query = "SELECT user.name FROM Post " +
+                       "INNER JOIN user ON Post.user_id = user.id " +
+                       "WHERE Post.postName = ?";
+        String owner = null;
 
+        try (Connection connection = DriverManager.getConnection(this.dbUrl, this.dbUsername, this.password);
+             PreparedStatement stmnt = connection.prepareStatement(query)) {
+
+            stmnt.setString(1, postId);
+            try (ResultSet rs = stmnt.executeQuery()) {
+                if (rs.next()) {
+                    owner = rs.getString("name");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return owner;
+    }
+
+    public int getPostId(String postName) {
+        String query = "SELECT id FROM Post WHERE postName = ?";
+        int postId = -1;
+
+        try (Connection connection = DriverManager.getConnection(this.dbUrl, this.dbUsername, this.password);
+             PreparedStatement stmnt = connection.prepareStatement(query)) {
+
+            stmnt.setString(1, postName);
+            try (ResultSet rs = stmnt.executeQuery()) {
+                if (rs.next()) {
+                    postId = rs.getInt("id");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return postId;
+    }
 }
